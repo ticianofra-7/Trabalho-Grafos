@@ -12,7 +12,8 @@ TabelaIncidencia CriaTabelaIncidencia(const vector<vector<int>> &matrizInc);
 void ImprimeMatrizNxN(const vector<vector<int>> &matriz, int n);
 void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nArestas);
 
-ifstream arquivo("grafo.txt");
+string diretorio = "../input/grafo.txt";
+ifstream arquivo(diretorio);
 
 int main()
 {
