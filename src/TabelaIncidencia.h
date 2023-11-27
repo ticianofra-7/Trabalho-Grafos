@@ -14,7 +14,7 @@ class TabelaIncidencia
     public:
         TabelaIncidencia(int nLinhas, int nColunas) : linhas(nLinhas, nullptr){}
         void addElement(int linha, int coluna, int valor);
-        void imprimeTabelaInc();
+        void imprimeTabelaInc(ofstream &output_file);
 };
 
 #endif // TABELAINCIDENCIA_H

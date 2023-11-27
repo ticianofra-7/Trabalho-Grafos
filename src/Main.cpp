@@ -6,33 +6,34 @@
 
 using namespace std;
 
-void LeMatriz(vector<vector<int>> &matriz, int n);
+void LeMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n);
 void CriaMatrizIncidencia(vector<vector<int>> &matrizInc, const vector<vector<int>> &matrizAdj, int n);
 TabelaIncidencia CriaTabelaIncidencia(const vector<vector<int>> &matrizInc);
-void ImprimeMatrizNxN(const vector<vector<int>> &matriz, int n);
-void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nArestas);
+void ImprimeMatrizNxN(const vector<vector<int>> &matriz, int n, ofstream &output_file);
+void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nArestas, ofstream &output_file);
 
 string diretorio = "../input/grafo.txt";
-ifstream arquivo(diretorio);
 
 int main()
 {
-    if(!arquivo.is_open()){
+    ifstream input_file(diretorio);
+
+    if(!input_file.is_open()){
         cout << "Não foi possível abrir o arquivo." << endl;
         return 1;
     }
 
     // Leitura número de vértices
     int n; 
-    arquivo >> n;
+    input_file >> n;
 
     // Leitura da matriz de adjacência
     vector<vector<int>> matrizAdj;
-    LeMatriz(matrizAdj, n);
+    LeMatriz(input_file, matrizAdj, n);
 
     // Leitura da matriz de distância
     vector<vector<int>> matrizDist;
-    LeMatriz(matrizDist, n);
+    LeMatriz(input_file, matrizDist, n);
 
     // Conta número de arestas do grafo
     int nArestas = 0;
@@ -49,30 +50,39 @@ int main()
     // Cria tabela de incidência
     TabelaIncidencia tabelaInc = CriaTabelaIncidencia(matrizInc);
 
-    // Imprime
+    // Imprime no console e escreve no arquivo de saída
+    ofstream output_file("../output/saida.txt"); // Abre/cria o arquivo de saída
+
     cout << "Matriz de Adjacência:" << endl;
-    ImprimeMatrizNxN(matrizAdj, n);
+    output_file << "Matriz de Adjadência:" << endl;
+    ImprimeMatrizNxN(matrizAdj, n, output_file);
 
     cout << endl << "Matriz de Distância:" << endl;
-    ImprimeMatrizNxN(matrizDist, n);
+    output_file << endl << "Matriz de Distância:" << endl;
+    ImprimeMatrizNxN(matrizDist, n, output_file);
     
     cout << endl << "Matriz de Incidência:" << endl << "  ";
-    ImprimeMatrizIncidencia(matrizInc, n, nArestas);
+    output_file << endl << "Matriz de Incidência:" << endl << "  ";
+    ImprimeMatrizIncidencia(matrizInc, n, nArestas, output_file);
 
     cout << endl << "Tabela de Incidência:" << endl;
-    tabelaInc.imprimeTabelaInc();
+    output_file << endl << "Tabela de Incidência:" << endl;
+    tabelaInc.imprimeTabelaInc(output_file);
+
+    // Fecha arquivo de saída
+    output_file.close();
 
     return 0;
 }
 
-void LeMatriz(vector<vector<int>> &matriz, int n)
+void LeMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n)
 {
     for(int i = 0; i < n; i++){
         vector<int> linha;
 
         for(int j = 0; j < n; j++){
             int valor;
-            arquivo >> valor;
+            input_file >> valor;
             linha.push_back(valor);
         }
         matriz.push_back(linha);
@@ -106,32 +116,44 @@ TabelaIncidencia CriaTabelaIncidencia(const vector<vector<int>> &matrizInc)
     return tabelaInc;
 }
 
-void ImprimeMatrizNxN(const vector<vector<int>> &matriz, int n)
+void ImprimeMatrizNxN(const vector<vector<int>> &matriz, int n, ofstream &output_file)
 {
     cout << "  ";
-    for(int i = 0; i < n; i++)
-        cout << i << " ";
-    cout << endl;
+    output_file << "  ";
     for(int i = 0; i < n; i++){
         cout << i << " ";
+        output_file << i << " ";
+    }
+    cout << endl;
+    output_file << endl;
+    for(int i = 0; i < n; i++){
+        cout << i << " ";
+        output_file << i << " ";
         for(int j = 0; j < n; j++){
             cout << matriz[i][j] << " ";
+            output_file << matriz[i][j] << " ";
         }
         cout << endl;
+        output_file << endl;
     }
 }
 
-void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nArestas)
+void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nArestas, ofstream &output_file)
 {
     for(int i = 0; i < nArestas/2; i++){
         cout << (char)(97+i) << " ";
+        output_file << (char)(97+i) << " ";
     }
     cout << endl;
+    output_file << endl;
     for(int i = 0; i < n; i++){
         cout << i << " ";
+        output_file << i << " ";
         for(int j = 0; j < nArestas/2; j++){
             cout << matrizInc[i][j] << " ";
+            output_file << matrizInc[i][j] << " ";
         }
         cout << endl;
+        output_file << endl;
     }
 }

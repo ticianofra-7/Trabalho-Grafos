@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include "TabelaIncidencia.h"
 
@@ -11,15 +12,17 @@ void TabelaIncidencia::addElement(int linha, int coluna, int valor)
     linhas[linha] = novoNo;
 }
 
-void TabelaIncidencia::imprimeTabelaInc()
+void TabelaIncidencia::imprimeTabelaInc(ofstream &output_file)
 {
     for(int i = 0; i < linhas.size(); i++){
         No* atual = linhas[i];
         while(atual != nullptr){
             cout << "(" << i << ", " << (char)(atual->coluna + 97) << ") = " << atual->valor << endl;
+            output_file << "(" << i << ", " << (char)(atual->coluna + 97) << ") = " << atual->valor << endl;
             atual = atual->prox;
         }
     }
     cout << endl;
+    output_file << endl;
 }
 
