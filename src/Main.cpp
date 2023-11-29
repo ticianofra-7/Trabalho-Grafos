@@ -8,6 +8,7 @@ using namespace std;
 
 void LeMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n);
 void CriaMatrizIncidencia(vector<vector<int>> &matrizInc, const vector<vector<int>> &matrizAdj, int n);
+void criaArvoreBuscaProfundidade(vector<vector<int>> &matrizAdj, vector<vector<int>> &matrizDist, vector<vector<int>> &matrizProfund);
 TabelaIncidencia CriaTabelaIncidencia(const vector<vector<int>> &matrizInc);
 void ImprimeMatrizNxN(const vector<vector<int>> &matriz, int n, ofstream &output_file);
 void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nArestas, ofstream &output_file);
@@ -45,7 +46,7 @@ int main()
 
     // Cria e zera matriz de incidência
     vector<vector<int>> matrizInc(n, vector<int>(nArestas, 0));
-    CriaMatrizIncidencia(matrizInc, matrizAdj, n);    
+    CriaMatrizIncidencia(matrizInc, matrizAdj, n);
 
     // Cria tabela de incidência
     TabelaIncidencia tabelaInc = CriaTabelaIncidencia(matrizInc);
@@ -155,5 +156,45 @@ void ImprimeMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, int nA
         }
         cout << endl;
         output_file << endl;
+    }
+}
+
+void criaArvoreBuscaProfundidade(vector<vector<int>> &matrizAdj, vector<vector<int>> &matrizDist, vector<vector<int>> &matrizProfund) {
+    int verticeInicial = 0; //começando no vértice da linha 0 da matriz de adjacência (posteriormente será digitado pelo usuário)
+    int menorValor;
+    int valorCondicao;
+    int indiceExcluir;
+    int inicio = 0;
+    vector<int> listaVerticeArvore;
+    vector<int> listaParAresta;
+    vector<vector<int>> listaArestasArvore;
+    vector<vector<int>> listaArestasFronteira;
+    bool vazio = false;
+
+    while(vazio) {
+        listaVerticeArvore.push_back(verticeInicial);
+        for(int i = 0; i < matrizAdj[verticeInicial].size(); i++) {
+            if(matrizAdj[verticeInicial][i] == 1) {
+                listaParAresta.push_back(verticeInicial);
+                listaParAresta.push_back(i);
+                listaArestasFronteira.push_back(listaParAresta);
+                listaParAresta.clear();
+            }
+        }
+        menorValor = matrizDist[listaArestasFronteira.at(0).at(0)][listaArestasFronteira.at(0).at(1)];
+        indiceExcluir = 0;
+        for(int i = inicio; i < listaArestasFronteira.size(); i++) {
+            valorCondicao = matrizDist[listaArestasFronteira.at(i).at(0)][listaArestasFronteira.at(i).at(1)];
+            if(valorCondicao < menorValor) {
+                menorValor = valorCondicao;
+                indiceExcluir = i;
+            }
+        }
+        listaArestasArvore.push_back(listaArestasFronteira.at(indiceExcluir));
+        verticeInicial = listaArestasArvore.back().at(1);
+        listaArestasFronteira.erase(listaArestasFronteira.begin()+indiceExcluir);
+        inicio = listaArestasFronteira.size();
+        if(listaArestasFronteira.empty() == true)
+            vazio = true;
     }
 }
