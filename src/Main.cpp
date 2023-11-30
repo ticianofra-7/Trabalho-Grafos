@@ -21,6 +21,9 @@ void Imprimir(const vector<vector<int>> &matrizAdj, const vector<vector<int>> &m
 void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
 void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
 
+void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
+void BuscaEmProfundidade_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
+
 int main()
 {    
     // Abre o arquivo de entrada
@@ -71,6 +74,11 @@ int main()
             cout << "Busca em Largura: ";
             output_file << "Busca em Largura: ";
             BuscaEmLargura_Completa(matrizAdj, n, output_file);
+
+            // Executa Busca em Profundidade
+            cout << "Busca em Profundidade: ";
+            output_file << "Busca em Profundidade: ";
+            BuscaEmProfundidade_Completa(matrizAdj, n, output_file);  
             break;
         case 2:
             tipoGrafo = 2;
@@ -84,7 +92,12 @@ int main()
             // Executa Busca em Largura
             cout << "Busca em Largura: ";
             output_file << "Busca em Largura: ";
-            BuscaEmLargura_Completa(matrizAdj, n, output_file);            
+            BuscaEmLargura_Completa(matrizAdj, n, output_file);    
+
+            // Executa Busca em Profundidade
+            cout << "Busca em Profundidade: ";
+            output_file << "Busca em Profundidade: ";
+            BuscaEmProfundidade_Completa(matrizAdj, n, output_file);          
             break;
         case 3:
             tipoGrafo = 3;
@@ -102,6 +115,11 @@ int main()
             cout << "Busca em Largura: ";
             output_file << "Busca em Largura: ";
             BuscaEmLargura_Completa(matrizAdj, n, output_file);
+
+            // Executa Busca em Profundidade
+            cout << "Busca em Profundidade: ";
+            output_file << "Busca em Profundidade: ";
+            BuscaEmProfundidade_Completa(matrizAdj, n, output_file); 
             break;
         default:
             cout << "Erro: Entrada inválida!" << endl;
@@ -335,6 +353,37 @@ void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstre
             BuscaEmLargura(matrizAdj, i, visitados, output_file);
         }
     }
+    cout << endl;
+    output_file << endl;
 }
 
+void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file)
+{
+    visitados[verticeInicial] = true;
+    cout << verticeInicial << " ";
+    output_file << verticeInicial << " ";
+
+    for (int i = 0; i < matrizAdj.size(); ++i)
+    {
+        if (matrizAdj[verticeInicial][i] == 1 && !visitados[i])
+        {
+            BuscaEmProfundidade(matrizAdj, i, visitados, output_file);
+        }
+    }
+}
+
+void BuscaEmProfundidade_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file)
+{
+    vector<bool> visitados(n, false);
+
+    for (int i = 0; i < n; ++i)
+    {
+        if (!visitados[i])
+        {
+            BuscaEmProfundidade(matrizAdj, i, visitados, output_file);
+        }
+    }
+    cout << endl;
+    output_file << endl;
+}
 
