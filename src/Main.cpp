@@ -2,21 +2,27 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <queue>
 
 #include "TabelaIncidencia.h"
 
 using namespace std;
 
+// Parte 1 - Base
 void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n);
-vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matrizDist);
+vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matrizDist, int tipoGrafo);
 vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matrizDist, int tipoGrafo);
 TabelaIncidencia CriarTabelaIncidencia(const vector<vector<int>> &matrizInc);
 void ImprimirMatrizNxN(const vector<vector<int>> &matriz, int n, ofstream &output_file);
 void ImprimirMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, ofstream &output_file);
 void Imprimir(const vector<vector<int>> &matrizAdj, const vector<vector<int>> &matrizInc, TabelaIncidencia *tabelaInc, int n, ofstream &output_file);
 
+//Parte 2 - Algoritmos
+void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
+void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
+
 int main()
-{
+{    
     // Abre o arquivo de entrada
     ifstream input_file("../input/grafo.txt");
 
@@ -54,23 +60,35 @@ int main()
     {
         case 1:
             tipoGrafo = 1;
+            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo); // Serve para execução da Busca em Largura
             matrizInc = CriarMatrizIncidencia(matriz, tipoGrafo);
             tabelaInc = CriarTabelaIncidencia(matrizInc);
 
             // Imprime no console e escreve no arquivo
             Imprimir(matriz, matrizInc, &tabelaInc, n, output_file);
+
+            // Executa Busca em Largura
+            cout << "Busca em Largura: ";
+            output_file << "Busca em Largura: ";
+            BuscaEmLargura_Completa(matrizAdj, n, output_file);
             break;
         case 2:
-            tipoGrafo = 2;            
+            tipoGrafo = 2;
+            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);            
             matrizInc = CriarMatrizIncidencia(matriz, tipoGrafo);
             tabelaInc = CriarTabelaIncidencia(matrizInc);
 
             // Imprime no console e escreve no arquivo
-            Imprimir(matriz, matrizInc, &tabelaInc, n, output_file);            
+            Imprimir(matriz, matrizInc, &tabelaInc, n, output_file);
+
+            // Executa Busca em Largura
+            cout << "Busca em Largura: ";
+            output_file << "Busca em Largura: ";
+            BuscaEmLargura_Completa(matrizAdj, n, output_file);            
             break;
         case 3:
             tipoGrafo = 3;
-            matrizAdj = CriarMatrizAdjacencia(matriz);
+            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
             matrizInc = CriarMatrizIncidencia(matriz, tipoGrafo);
             tabelaInc = CriarTabelaIncidencia(matrizInc);
 
@@ -78,7 +96,12 @@ int main()
             cout << "Matriz de Distância:" << endl;
             output_file << "Matriz de Distância:" << endl;
             ImprimirMatrizNxN(matriz, n, output_file);
-            Imprimir(matriz, matrizInc, &tabelaInc, n, output_file);            
+            Imprimir(matrizAdj, matrizInc, &tabelaInc, n, output_file);  
+
+            // Executa Busca em Largura
+            cout << "Busca em Largura: ";
+            output_file << "Busca em Largura: ";
+            BuscaEmLargura_Completa(matrizAdj, n, output_file);
             break;
         default:
             cout << "Erro: Entrada inválida!" << endl;
@@ -92,6 +115,7 @@ int main()
     return 0;
 }
 
+// Parte 1 - Base
 void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n)
 {
     for (int i = 0; i < n; i++)
@@ -108,19 +132,34 @@ void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n)
     }
 }
 
-// Função para criar a matriz de adjacência a partir da matriz de distância
-vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matrizDist)
+vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matriz, int tipoGrafo)
 {
-    int nVertices = matrizDist.size();
+    int nVertices = matriz.size();
     vector<vector<int>> matrizAdj(nVertices, vector<int>(nVertices, 0));
 
-    for (int i = 0; i < nVertices; i++)
-    {
-        for (int j = 0; j < nVertices; j++)
+    if(tipoGrafo == 1){
+        for (int i = 0; i < nVertices; i++)
         {
-            if (matrizDist[i][j] != 0 && matrizDist[i][j] != 999)
+            for (int j = 0; j < nVertices; j++)
             {
-                matrizAdj[i][j] = 1; // Existe uma aresta entre i e j
+                if (matriz[i][j] != 0 && matriz[i][j] != 999)
+                {
+                    matrizAdj[i][j] = 1; // Existe uma aresta de i para j
+                    matrizAdj[j][i] = 1; // Existe uma aresta de j para i, ou seja, existe uma única aresta entre i e j (via de mão dupla)
+                }
+            }
+        }
+
+    }
+    else if(tipoGrafo == 2 || tipoGrafo == 3){
+        for (int i = 0; i < nVertices; i++)
+        {
+            for (int j = 0; j < nVertices; j++)
+            {
+                if (matriz[i][j] != 0 && matriz[i][j] != 999)
+                {
+                    matrizAdj[i][j] = 1; // Existe uma aresta de i para j
+                }
             }
         }
     }
@@ -257,6 +296,45 @@ void Imprimir(const vector<vector<int>> &matrizAdj, const vector<vector<int>> &m
             cout << endl << "Tabela de Incidência:" << endl;
             output_file << endl << "Tabela de Incidência:" << endl;
             tabelaInc->Imprimir(output_file);
+}
+
+
+// Parte 2 - Algoritmos
+void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file) {
+    queue<int> fila;
+
+    // Inicializa a fila e marca o vértice inicial como visitado
+    fila.push(verticeInicial);
+    visitados[verticeInicial] = true;
+
+    while (!fila.empty()) {
+        int verticeAtual = fila.front(); // Retorna uma referência ao elemento no início da fila 
+        fila.pop();
+
+        cout << verticeAtual << " ";
+        output_file << verticeAtual << " ";
+
+        // Percorre todos os vértices adjacentes ao vértice atual
+        for (int i = 0; i < matrizAdj.size(); i++) {
+            // Verifica se há uma aresta entre os vértices e se o vértice adjacente não foi visitado
+            if (matrizAdj[verticeAtual][i] == 1 && !visitados[i]) {
+                fila.push(i);
+                visitados[i] = true;
+            }
+        }
+    }
+}
+
+// Função para realizar a Busca em Largura em todos os vértices do grafo
+void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file) {
+    vector<bool> visitados(n, false);
+
+    // Executa a Busca em Largura a partir de todos os vértices não visitados
+    for (int i = 0; i < n; i++) {
+        if (!visitados[i]) {
+            BuscaEmLargura(matrizAdj, i, visitados, output_file);
+        }
+    }
 }
 
 
