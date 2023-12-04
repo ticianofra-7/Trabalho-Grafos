@@ -12,9 +12,10 @@ class TabelaIncidencia
         vector<No*> linhas; // As linhas são um vetor de ponteiros para os nós
     
     public:
+        TabelaIncidencia(){};
         TabelaIncidencia(int nLinhas, int nColunas) : linhas(nLinhas, nullptr){}
-        void addElement(int linha, int coluna, int valor);
-        void imprimeTabelaInc(ofstream &output_file);
+        void AdicionarElemento(int linha, int coluna, int valor);
+        void Imprimir(ofstream &output_file);
 };
 
 #endif // TABELAINCIDENCIA_H
