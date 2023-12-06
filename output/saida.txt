@@ -32,9 +32,8 @@ Tabela de Incidência:
 (2, b) =  1
 (3, d) =  1
 
-Busca em Largura: 0 1 2 3 
-Busca em Profundidade: 0 1 2 3 
-Árvore Geradora Mínima (Prim):
-2 -> 1 | Peso: 1
-0 -> 2 | Peso: 3
-2 -> 3 | Peso: 5
+Vértice inicial: 2
+Busca em Profundidade: 2 0 1 3 
+
+Vértice inicial: 1
+Busca em Largura: 1 0 2 3 

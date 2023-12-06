@@ -19,11 +19,10 @@ void ImprimirMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, ofstr
 void Imprimir(const vector<vector<int>> &matrizDist, const vector<vector<int>> &matrizAdj, const vector<vector<int>> &matrizInc, TabelaIncidencia *tabelaInc, int n, ofstream &output_file);
 
 //Parte 2 - Algoritmos
-void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
-void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
+void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ofstream &output_file);
 
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
-void BuscaEmProfundidade_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
+void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
 
 void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 
@@ -53,70 +52,109 @@ int main()
     vector<vector<int>> matrizInc;
     TabelaIncidencia tabelaInc;
 
-    int tipoGrafo; // 1 - Simples (matriz lida = adjacência), 2 - Digrafo não-valorado (matriz lida = adjacência), 3 - Digrafo valorado (matriz lida = distância)
-    int opcao;
+    int tipoGrafo; // 1 - Simples (matriz lida = distância), 2 - Digrafo valorado (matriz lida = distância)
+    int opcaoAlgoritmo;
+    int verticeInicial; // Para algoritmos BFS e DPS
 
+    cout << "Escolha o tipo de grafo:" << endl;
     cout << "[1] Grafo Simples, valorado" << endl;
     cout << "[2] Digrafo Simples, valorado" << endl << endl;
-    cin >> opcao;
+    cin >> tipoGrafo;
     cout << endl;
 
-    switch (opcao)
-    {
-        case 1:
-            tipoGrafo = 1;
-            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
-            matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
-            tabelaInc = CriarTabelaIncidencia(matrizInc);
+    if(tipoGrafo == 1){
+        matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
+        matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
+        tabelaInc = CriarTabelaIncidencia(matrizInc);
+        Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
 
-            // Imprime no console e escreve no arquivo
-            Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
+        do{
+            cout << endl << "Escolha um algoritmo:" << endl;
+            cout << "[1] Busca em Largura (BFS)" << endl;
+            cout << "[2] Busca em Profundidade (DFS)" << endl;
+            cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
+            cout << "[4] Sair" << endl << endl;
+            cin >> opcaoAlgoritmo;
 
-            // Executa Busca em Largura
-            cout << "Busca em Largura: ";
-            output_file << "Busca em Largura: ";
-            BuscaEmLargura_Completa(matrizAdj, n, output_file);
-
-            // Executa Busca em Profundidade
-            cout << "Busca em Profundidade: ";
-            output_file << "Busca em Profundidade: ";
-            BuscaEmProfundidade_Completa(matrizAdj, n, output_file);  
-
-            // Executa o algoritmo de Prim
-            cout << "Árvore Geradora Mínima (Prim):" << endl;
-            output_file << "Árvore Geradora Mínima (Prim):" << endl;
-            Prim(matriz, n, output_file);
-            break;
-        
-        case 2:
-            tipoGrafo = 2;
-            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
-            matrizInc = CriarMatrizIncidencia(matriz, tipoGrafo);
-            tabelaInc = CriarTabelaIncidencia(matrizInc);
-
-            Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);  
-
-            // Executa Busca em Largura
-            cout << "Busca em Largura: ";
-            output_file << "Busca em Largura: ";
-            BuscaEmLargura_Completa(matrizAdj, n, output_file);
-
-            // Executa Busca em Profundidade
-            cout << "Busca em Profundidade: ";
-            output_file << "Busca em Profundidade: ";
-            BuscaEmProfundidade_Completa(matrizAdj, n, output_file); 
-
-            // Executa o algoritmo de Prim
-            cout << "Árvore Geradora Mínima (Prim):" << endl;
-            output_file << "Árvore Geradora Mínima (Prim):" << endl;
-            Prim(matriz, n, output_file);
-            break;
-        default:
-            cout << "Erro: Entrada inválida!" << endl;
-            break;
+            switch (opcaoAlgoritmo)
+            {
+            case 1:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Largura: ";
+                output_file << "Busca em Largura: ";
+                BuscaEmLargura(matrizAdj, verticeInicial, output_file);                            
+                break;
+            
+            case 2:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Profundidade: ";
+                output_file << "Busca em Profundidade: ";
+                BuscaEmProfundidade_Aux(matrizAdj, n, verticeInicial, output_file);                    
+                break;
+            
+            case 3:
+                cout << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                output_file << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                Prim(matriz, n, output_file);                
+                break;
+            
+            default:
+                cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
+                break;
+            }
+        }while(opcaoAlgoritmo != 4);
     }
-    cout << endl;
+    else if(tipoGrafo == 2){
+        matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
+        matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
+        tabelaInc = CriarTabelaIncidencia(matrizInc);
+        Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
 
+        do{
+            cout << endl <<"Escolha um algoritmo:" << endl;
+            cout << "[1] Busca em Largura (BFS)" << endl;
+            cout << "[2] Busca em Profundidade (DFS)" << endl;
+            cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
+            cout << "[4] Sair" << endl << endl;
+            cin >> opcaoAlgoritmo;
+
+            switch (opcaoAlgoritmo)
+            {
+            case 1:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Largura: ";
+                output_file << "Busca em Largura: ";
+                BuscaEmLargura(matrizAdj, verticeInicial, output_file);                            
+                break;
+            
+            case 2:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Profundidade: ";
+                output_file << "Busca em Profundidade: ";
+                BuscaEmProfundidade_Aux(matrizAdj, n, verticeInicial, output_file);                    
+                break;
+            
+            case 3:
+                cout << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                output_file << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                Prim(matriz, n, output_file);                
+                break;
+            
+            default:
+                cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
+                break;
+            }
+        }while(opcaoAlgoritmo != 4);
+    }
+    
     // Fecha arquivo de saída
     output_file.close();
 
@@ -316,8 +354,9 @@ void Imprimir(const vector<vector<int>> &matrizDist, const vector<vector<int>> &
 
 
 // Parte 2 - Algoritmos
-void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file) {
+void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ofstream &output_file) {
     queue<int> fila;
+    vector<bool> visitados(matrizAdj.size(), false);
 
     // Inicializa a fila e marca o vértice inicial como visitado
     fila.push(verticeInicial);
@@ -339,29 +378,18 @@ void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ve
             }
         }
     }
-}
-
-// Função para realizar a Busca em Largura em todos os vértices do grafo
-void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file) {
-    vector<bool> visitados(n, false);
-
-    // Executa a Busca em Largura a partir de todos os vértices não visitados
-    for (int i = 0; i < n; i++) {
-        if (!visitados[i]) {
-            BuscaEmLargura(matrizAdj, i, visitados, output_file);
-        }
-    }
     cout << endl;
     output_file << endl;
 }
 
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file)
 {
+
     visitados[verticeInicial] = true;
     cout << verticeInicial << " ";
     output_file << verticeInicial << " ";
 
-    for (int i = 0; i < matrizAdj.size(); ++i)
+    for (int i = 0; i < matrizAdj.size(); i++)
     {
         if (matrizAdj[verticeInicial][i] == 1 && !visitados[i])
         {
@@ -370,17 +398,12 @@ void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicia
     }
 }
 
-void BuscaEmProfundidade_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file)
+void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file)
 {
     vector<bool> visitados(n, false);
 
-    for (int i = 0; i < n; ++i)
-    {
-        if (!visitados[i])
-        {
-            BuscaEmProfundidade(matrizAdj, i, visitados, output_file);
-        }
-    }
+    BuscaEmProfundidade(matrizAdj, verticeInicial, visitados, output_file);      
+    
     cout << endl;
     output_file << endl;
 }

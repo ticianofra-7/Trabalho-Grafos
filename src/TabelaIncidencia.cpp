@@ -24,7 +24,5 @@ void TabelaIncidencia::Imprimir(ofstream &output_file)
             atual = atual->prox;
         }
     }
-    cout << endl;
-    output_file << endl;
 }
 
