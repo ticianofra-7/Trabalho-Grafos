@@ -12,9 +12,8 @@ using namespace std;
 
 // Parte 1 - Base
 void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n);
-vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matriz, int tipoGrafo);
-vector<vector<int>> CriarMatrizDistancia(const vector<vector<int>> &matriz, int tipoGrafo);
-vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int tipoGrafo);
+vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matrizDist, int tipoGrafo);
+vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matrizDist, int tipoGrafo);
 TabelaIncidencia CriarTabelaIncidencia(const vector<vector<int>> &matrizInc);
 void ImprimirMatrizNxN(const vector<vector<int>> &matriz, int n, ofstream &output_file);
 void ImprimirMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, ofstream &output_file);
@@ -26,9 +25,9 @@ void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, of
 void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
 
-void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
-
 void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
+
+void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 
 void OrdenacaoTopologica_Aux(const vector<vector<int>> &matrizAdj, int vertice, vector<bool> &visitados, stack<int> &pilha);
 void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_file);
@@ -55,7 +54,6 @@ int main()
     LerMatriz(input_file, matriz, n);
 
     vector<vector<int>> matrizAdj;
-    vector<vector<int>> matrizDist;
     vector<vector<int>> matrizInc;
     TabelaIncidencia tabelaInc;
 
@@ -71,7 +69,6 @@ int main()
 
     if(tipoGrafo == 1){
         matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
-        matrizDist = CriarMatrizDistancia(matriz, tipoGrafo);
         matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
         tabelaInc = CriarTabelaIncidencia(matrizInc);
         Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
@@ -81,7 +78,7 @@ int main()
             cout << "[1] Busca em Largura (BFS)" << endl;
             cout << "[2] Busca em Profundidade (DFS)" << endl;
             cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
-            cout << "[4] Caminho Mínimo" << endl;
+            cout << "[4] Caminho Mínimo (Dijkstra)" << endl;
             cout << "[5] Sair" << endl << endl;
             cin >> opcaoAlgoritmo;
 
@@ -114,7 +111,7 @@ int main()
             case 4:
                 cout << endl << "Caminho mínimo (Dijkstra):";
                 output_file << endl << "Caminho mínimo (Dijkstra):";
-                CaminhoMinimo(matrizDist, 0, n, output_file);
+                CaminhoMinimo(matriz, 0, n, output_file);
                 break;
             
             default:
@@ -125,7 +122,6 @@ int main()
     }
     else if(tipoGrafo == 2){
         matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
-        matrizDist = CriarMatrizDistancia(matriz, tipoGrafo);
         matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
         tabelaInc = CriarTabelaIncidencia(matrizInc);
         Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
@@ -220,6 +216,7 @@ vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matriz, int tipoG
                 }
             }
         }
+
     }
     else if(tipoGrafo == 2){
         for (int i = 0; i < nVertices; i++)
@@ -235,33 +232,6 @@ vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matriz, int tipoG
     }
 
     return matrizAdj;
-}
-
-vector<vector<int>> CriarMatrizDistancia(const vector<vector<int>> &matriz, int tipoGrafo) {
-    int nVertices = matriz.size();
-    vector<vector<int>> matrizDist(nVertices, vector<int>(nVertices, 999));
-    
-    if(tipoGrafo == 1) {
-        for(int i = 0; i < nVertices; i++) {
-            for(int j = i; j < nVertices; j++) {
-                if(matriz[i][j] != 0 && matriz[i][j] != 999) {
-                    matrizDist[i][j] = matriz[i][j];
-                    matrizDist[j][i] = matriz[i][j];
-                }
-            }
-        }
-    }
-    if(tipoGrafo == 2) {
-        for(int i = 0; i < matriz.size(); i++) {
-            for(int j = 0; j < matriz[j].size(); j++) {
-                if(matriz[i][j] != 0 && matriz[i][j] != 999) {
-                    matrizDist[i][j] = matriz[i][j];
-                }
-            }
-        }
-    }
-
-    return matrizDist;
 }
 
 vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int tipoGrafo)
@@ -508,8 +478,12 @@ void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, in
     //cout << "Lista do caminho minimo a partir do vertice inicial (1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia): ";
     cout << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
     cout << "[";
+    output_file << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
+    output_file << "[";
+
     for(int i = 0; i < nVertices; i++) {
         cout << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
+        output_file << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
         filaVertices.pop();
         filaOrdem.pop();
         filaDistancias.pop();
@@ -517,6 +491,7 @@ void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, in
             cout << ",";
     }
     cout << "]" << endl;
+    output_file << "]" << endl;
 }
 
 void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
