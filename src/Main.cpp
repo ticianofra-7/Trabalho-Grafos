@@ -11,7 +11,7 @@ using namespace std;
 
 // Parte 1 - Base
 void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n);
-vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matriz, int tipoGrafo);
+vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matriz, int tipoGrafo);
 vector<vector<int>> CriarMatrizDistancia(const vector<vector<int>> &matriz, int tipoGrafo);
 vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int tipoGrafo);
 TabelaIncidencia CriarTabelaIncidencia(const vector<vector<int>> &matrizInc);
@@ -78,7 +78,8 @@ int main()
             cout << "[1] Busca em Largura (BFS)" << endl;
             cout << "[2] Busca em Profundidade (DFS)" << endl;
             cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
-            cout << "[4] Sair" << endl << endl;
+            cout << "[4] Caminho Mínimo" << endl;
+            cout << "[5] Sair" << endl << endl;
             cin >> opcaoAlgoritmo;
 
             switch (opcaoAlgoritmo)
@@ -117,7 +118,7 @@ int main()
                 cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
                 break;
             }
-        }while(opcaoAlgoritmo != 4);
+        }while(opcaoAlgoritmo != 5);
     }
     else if(tipoGrafo == 2){
         matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
@@ -507,6 +508,7 @@ void caminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, in
     }
     cout << "]";
 }
+
 void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
     // Vetor para armazenar os pais dos vértices na árvore geradora mínima
     vector<int> pais(n, -1);
