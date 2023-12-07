@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <climits>
+#include <stack>
 
 #include "TabelaIncidencia.h"
 
@@ -22,18 +23,20 @@ void Imprimir(const vector<vector<int>> &matrizDist, const vector<vector<int>> &
 //Parte 2 - Algoritmos
 void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ofstream &output_file);
 
-void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
-void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
+void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
+void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
 
 void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 
-void caminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
+void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
+
+void OrdenacaoTopologica_Aux(const vector<vector<int>> &matrizAdj, int vertice, vector<bool> &visitados, stack<int> &pilha);
+void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_file);
 
 int main()
 {    
     // Abre o arquivo de entrada
     ifstream input_file("../input/grafo.txt");
-
     // Abre/cria o arquivo de saída
     ofstream output_file("../output/saida.txt");
 
@@ -58,7 +61,7 @@ int main()
 
     int tipoGrafo; // 1 - Simples (matriz lida = distância), 2 - Digrafo valorado (matriz lida = distância)
     int opcaoAlgoritmo;
-    int verticeInicial; // Para algoritmos BFS e DPS
+    int verticeInicial; // Para algoritmos BFS e DFS
 
     cout << "Escolha o tipo de grafo:" << endl;
     cout << "[1] Grafo Simples, valorado" << endl;
@@ -99,7 +102,7 @@ int main()
                 output_file << endl << "Vértice inicial: " << verticeInicial << endl;
                 cout << "Busca em Profundidade: ";
                 output_file << "Busca em Profundidade: ";
-                BuscaEmProfundidade_Aux(matrizAdj, n, verticeInicial, output_file);                    
+                BuscaEmProfundidade(matrizAdj, n, verticeInicial, output_file);                    
                 break;
             
             case 3:
@@ -109,9 +112,9 @@ int main()
                 break;
 
             case 4:
-                cout << "Dijkstra para caminho minimo: ";
-                output_file << "Dijkstra para caminho minimo: ";
-                caminhoMinimo(matrizDist, 0, n, output_file);
+                cout << endl << "Caminho mínimo (Dijkstra):";
+                output_file << endl << "Caminho mínimo (Dijkstra):";
+                CaminhoMinimo(matrizDist, 0, n, output_file);
                 break;
             
             default:
@@ -128,11 +131,12 @@ int main()
         Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
 
         do{
-            cout << endl <<"Escolha um algoritmo:" << endl;
+            cout << endl << "Escolha um algoritmo:" << endl;
             cout << "[1] Busca em Largura (BFS)" << endl;
             cout << "[2] Busca em Profundidade (DFS)" << endl;
             cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
-            cout << "[4] Sair" << endl << endl;
+            cout << "[4] Ordenação Topológica" << endl;
+            cout << "[5] Sair" << endl << endl;
             cin >> opcaoAlgoritmo;
 
             switch (opcaoAlgoritmo)
@@ -152,7 +156,7 @@ int main()
                 output_file << endl << "Vértice inicial: " << verticeInicial << endl;
                 cout << "Busca em Profundidade: ";
                 output_file << "Busca em Profundidade: ";
-                BuscaEmProfundidade_Aux(matrizAdj, n, verticeInicial, output_file);                    
+                BuscaEmProfundidade(matrizAdj, n, verticeInicial, output_file);                    
                 break;
             
             case 3:
@@ -161,11 +165,17 @@ int main()
                 Prim(matriz, n, output_file);                
                 break;
             
+            case 4:
+                cout << endl << "Ordenação Topológica:" << endl;
+                output_file << endl << "Ordenação Topológica:" << endl;
+                OrdenacaoTopologica(matrizAdj, output_file);
+                break;
+            
             default:
                 cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
                 break;
             }
-        }while(opcaoAlgoritmo != 4);
+        }while(opcaoAlgoritmo != 5);
     }
     
     // Fecha arquivo de saída
@@ -421,7 +431,7 @@ void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, of
     output_file << endl;
 }
 
-void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file)
+void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file)
 {
 
     visitados[verticeInicial] = true;
@@ -432,22 +442,22 @@ void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicia
     {
         if (matrizAdj[verticeInicial][i] == 1 && !visitados[i])
         {
-            BuscaEmProfundidade(matrizAdj, i, visitados, output_file);
+            BuscaEmProfundidade_Aux(matrizAdj, i, visitados, output_file);
         }
     }
 }
 
-void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file)
+void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file)
 {
     vector<bool> visitados(n, false);
 
-    BuscaEmProfundidade(matrizAdj, verticeInicial, visitados, output_file);      
+    BuscaEmProfundidade_Aux(matrizAdj, verticeInicial, visitados, output_file);      
     
     cout << endl;
     output_file << endl;
 }
 
-void caminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
+void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
 
     int verticeAtual, contador, menor, temporario, distancia;
     vector<bool> visitados(nVertices, false);
@@ -506,7 +516,7 @@ void caminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, in
         if(!(i == nVertices-1))
             cout << ",";
     }
-    cout << "]";
+    cout << "]" << endl;
 }
 
 void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
@@ -522,7 +532,7 @@ void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
 
     // Cria uma fila de prioridade (min heap) para escolher a próxima aresta de menor peso
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> filaPrioridade; // greater: Comparador usado para garantir que os elementos sejam organizados na fila de prioridade em ordem crescente com base no primeiro elemento do par (o peso da aresta).
-    filaPrioridade.push({0, 0}); // {Peso, Vértice}
+    filaPrioridade.push({0, 0}); // {Peso, Vértice}                                                 // vector<pair<int, int>>: Tipo do contêiner subjacente à fila de prioridade. Neste caso, é um vetor de pares de inteiros.
 
     while (!filaPrioridade.empty()) {
         int atual = filaPrioridade.top().second; // Vértice associado à menor aresta
@@ -532,7 +542,7 @@ void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
 
         for (int v = 0; v < n; v++) {
             if (matrizDist[atual][v] != 0 && matrizDist[atual][v] != 999 && !incluido[v] && matrizDist[atual][v] < pesoMinimo[v]) {
-                pesoMinimo[v] = matrizDist[atual][v];
+                pesoMinimo[v] = matrizDist[atual][v]; // Peso mínimo do vértice atual para algum adjacente v
                 pais[v] = atual;
                 filaPrioridade.push({pesoMinimo[v], v});
             }
@@ -544,4 +554,38 @@ void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
         cout << pais[i] << " -> " << i << " | Peso: " << pesoMinimo[i] << endl;
         output_file << pais[i] << " -> " << i << " | Peso: " << pesoMinimo[i] << endl;
     }
+}
+
+void OrdenacaoTopologica_Aux(const vector<vector<int>> &matrizAdj, int vertice, vector<bool> &visitados, stack<int> &pilha) {
+    visitados[vertice] = true;
+
+    for (int i = 0; i < matrizAdj.size(); i++) {
+        if (matrizAdj[vertice][i] == 1 && !visitados[i]) {
+            OrdenacaoTopologica_Aux(matrizAdj, i, visitados, pilha);
+        }
+    }
+
+    pilha.push(vertice);
+}
+
+void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_file) {
+    int n = matrizAdj.size();
+    vector<bool> visitados(n, false);
+    stack<int> pilha;
+
+    for (int i = 0; i < n; i++) {
+        if (!visitados[i]) {
+            OrdenacaoTopologica_Aux(matrizAdj, i, visitados, pilha);
+        }
+    }
+
+    // Imprime a ordenação topológica
+    while (!pilha.empty()) {
+        cout << pilha.top() << " ";
+        output_file << pilha.top() << " ";
+        pilha.pop();
+    }
+
+    cout << endl;
+    output_file << endl;
 }

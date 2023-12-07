@@ -1,38 +1,38 @@
+Matriz de Distância:
+      0     1     2     3 
+
+0     0    12     3     8 
+1    12     0     9    14 
+2     3     9     0     5 
+3     8    14     5     0 
 
 Matriz de Adjadência:
-      0     1     2     3     4 
+      0     1     2     3 
 
-0     0     1     1     0     0 
-1     1     0     1     0     1 
-2     1     1     0     1     1 
-3     0     0     1     0     1 
-4     0     1     1     1     0 
+0     0     1     1     1 
+1     1     0     1     1 
+2     1     1     0     1 
+3     1     1     1     0 
 
 Matriz de Incidência:
-      a     b     c     d 
+      a     b     c     d     e     f 
 
-0     1     1     0     0     0     0     0 
-1     1     0     1     1     0     0     0 
-2     0     1     1     0     1     1     0 
-3     0     0     0     0     1     0     1 
-4     0     0     0     1     0     1     1 
+0     1     1     1     0     0     0 
+1     1     0     0     1     1     0 
+2     0     1     0     1     0     1 
+3     0     0     1     0     1     1 
 
 Tabela de Incidência:
+(0, c) =  1
 (0, b) =  1
 (0, a) =  1
+(1, e) =  1
 (1, d) =  1
-(1, c) =  1
 (1, a) =  1
 (2, f) =  1
-(2, e) =  1
-(2, c) =  1
+(2, d) =  1
 (2, b) =  1
-(3, g) =  1
+(3, f) =  1
 (3, e) =  1
-(4, g) =  1
-(4, f) =  1
-(4, d) =  1
+(3, c) =  1
 
-Busca em Largura: 0 1 2 4 3 
-Busca em Profundidade: 0 1 2 3 4 
-Dijkstra para caminho minimo: 
