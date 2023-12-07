@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <vector>
 #include <queue>
+#include <climits>
 
 #include "TabelaIncidencia.h"
 
@@ -16,14 +17,15 @@ vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int
 TabelaIncidencia CriarTabelaIncidencia(const vector<vector<int>> &matrizInc);
 void ImprimirMatrizNxN(const vector<vector<int>> &matriz, int n, ofstream &output_file);
 void ImprimirMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, ofstream &output_file);
-void Imprimir(const vector<vector<int>> &matrizAdj, const vector<vector<int>> &matrizInc, TabelaIncidencia *tabelaInc, int n, ofstream &output_file);
+void Imprimir(const vector<vector<int>> &matrizDist, const vector<vector<int>> &matrizAdj, const vector<vector<int>> &matrizInc, TabelaIncidencia *tabelaInc, int n, ofstream &output_file);
 
 //Parte 2 - Algoritmos
-void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
-void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
+void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ofstream &output_file);
 
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
-void BuscaEmProfundidade_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file);
+void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
+
+void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 
 void caminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
 
@@ -45,7 +47,7 @@ int main()
     int n;
     input_file >> n;
 
-    // Matriz a ser lida (adjacência ou distância)
+    // Matriz a ser lida (distância)
     vector<vector<int>> matriz;
     LerMatriz(input_file, matriz, n);
 
@@ -54,57 +56,117 @@ int main()
     vector<vector<int>> matrizInc;
     TabelaIncidencia tabelaInc;
 
-    int tipoGrafo; // 1 - Simples (matriz lida = distãncia), 2 - Digrafo valorado (matriz lida = distância)
-    int opcao;
+    int tipoGrafo; // 1 - Simples (matriz lida = distância), 2 - Digrafo valorado (matriz lida = distância)
+    int opcaoAlgoritmo;
+    int verticeInicial; // Para algoritmos BFS e DPS
 
+    cout << "Escolha o tipo de grafo:" << endl;
     cout << "[1] Grafo Simples, valorado" << endl;
     cout << "[2] Digrafo Simples, valorado" << endl << endl;
-    cin >> opcao;
+    cin >> tipoGrafo;
     cout << endl;
 
-    switch (opcao)
-    {
-        case 1:
-            tipoGrafo = 1;
-            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo); // Serve para execução da Busca em Largura
-            matrizDist = CriarMatrizDistancia(matriz, tipoGrafo);
-            matrizInc = CriarMatrizIncidencia(matriz, tipoGrafo);
-            tabelaInc = CriarTabelaIncidencia(matrizInc);
+    if(tipoGrafo == 1){
+        matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
+        matrizDist = CriarMatrizDistancia(matriz, tipoGrafo);
+        matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
+        tabelaInc = CriarTabelaIncidencia(matrizInc);
+        Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
 
-            // Imprime no console e escreve no arquivo
-            Imprimir(matrizAdj, matrizInc, &tabelaInc, n, output_file);
+        do{
+            cout << endl << "Escolha um algoritmo:" << endl;
+            cout << "[1] Busca em Largura (BFS)" << endl;
+            cout << "[2] Busca em Profundidade (DFS)" << endl;
+            cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
+            cout << "[4] Sair" << endl << endl;
+            cin >> opcaoAlgoritmo;
 
-            // Executa Busca em Largura
-            cout << "Busca em Largura: ";
-            output_file << "Busca em Largura: ";
-            BuscaEmLargura_Completa(matrizAdj, n, output_file);
+            switch (opcaoAlgoritmo)
+            {
+            case 1:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Largura: ";
+                output_file << "Busca em Largura: ";
+                BuscaEmLargura(matrizAdj, verticeInicial, output_file);                            
+                break;
+            
+            case 2:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Profundidade: ";
+                output_file << "Busca em Profundidade: ";
+                BuscaEmProfundidade_Aux(matrizAdj, n, verticeInicial, output_file);                    
+                break;
+            
+            case 3:
+                cout << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                output_file << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                Prim(matriz, n, output_file);                
+                break;
 
-            // Executa Busca em Profundidade
-            cout << "Busca em Profundidade: ";
-            output_file << "Busca em Profundidade: ";
-            BuscaEmProfundidade_Completa(matrizAdj, n, output_file);
-
-            // Executa Caminho Minimo
-            cout << "Dijkstra para caminho minimo: ";
-            output_file << "Dijkstra para caminho minimo: ";
-            caminhoMinimo(matrizDist, 0, n, output_file);
-            break;
-        case 2:
-            tipoGrafo = 2;
-            matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);            
-            matrizDist = CriarMatrizDistancia(matriz, tipoGrafo);
-            matrizInc = CriarMatrizIncidencia(matriz, tipoGrafo);
-            tabelaInc = CriarTabelaIncidencia(matrizInc);
-
-            // Imprime no console e escreve no arquivo
-            Imprimir(matrizAdj, matrizInc, &tabelaInc, n, output_file);
-            break;
-        default:
-            cout << "Erro: Entrada inválida!" << endl;
-            break;
+            case 4:
+                cout << "Dijkstra para caminho minimo: ";
+                output_file << "Dijkstra para caminho minimo: ";
+                caminhoMinimo(matrizDist, 0, n, output_file);
+                break;
+            
+            default:
+                cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
+                break;
+            }
+        }while(opcaoAlgoritmo != 4);
     }
-    cout << endl;
+    else if(tipoGrafo == 2){
+        matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
+        matrizDist = CriarMatrizDistancia(matriz, tipoGrafo);
+        matrizInc = CriarMatrizIncidencia(matrizAdj, tipoGrafo);
+        tabelaInc = CriarTabelaIncidencia(matrizInc);
+        Imprimir(matriz, matrizAdj, matrizInc, &tabelaInc, n, output_file);
 
+        do{
+            cout << endl <<"Escolha um algoritmo:" << endl;
+            cout << "[1] Busca em Largura (BFS)" << endl;
+            cout << "[2] Busca em Profundidade (DFS)" << endl;
+            cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
+            cout << "[4] Sair" << endl << endl;
+            cin >> opcaoAlgoritmo;
+
+            switch (opcaoAlgoritmo)
+            {
+            case 1:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Largura: ";
+                output_file << "Busca em Largura: ";
+                BuscaEmLargura(matrizAdj, verticeInicial, output_file);                            
+                break;
+            
+            case 2:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
+                cout << "Busca em Profundidade: ";
+                output_file << "Busca em Profundidade: ";
+                BuscaEmProfundidade_Aux(matrizAdj, n, verticeInicial, output_file);                    
+                break;
+            
+            case 3:
+                cout << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                output_file << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                Prim(matriz, n, output_file);                
+                break;
+            
+            default:
+                cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
+                break;
+            }
+        }while(opcaoAlgoritmo != 4);
+    }
+    
     // Fecha arquivo de saída
     output_file.close();
 
@@ -128,7 +190,7 @@ void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n)
     }
 }
 
-vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matriz, int tipoGrafo)
+vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matriz, int tipoGrafo)
 {
     int nVertices = matriz.size();
     vector<vector<int>> matrizAdj(nVertices, vector<int>(nVertices, 0));
@@ -142,12 +204,13 @@ vector<vector<int>> CriarMatrizAdjacencia(const vector<vector<int>> &matriz, int
                 {
                     matrizAdj[i][j] = 1; // Existe uma aresta de i para j
                     matrizAdj[j][i] = 1; // Existe uma aresta de j para i, ou seja, existe uma única aresta entre i e j (via de mão dupla)
+
+                    matriz[j][i] = matriz[i][j]; // Completa matriz de distância (= matriz simétrica)
                 }
             }
         }
     }
-
-    if(tipoGrafo == 2){
+    else if(tipoGrafo == 2){
         for (int i = 0; i < nVertices; i++)
         {
             for (int j = 0; j < nVertices; j++)
@@ -195,7 +258,7 @@ vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int
     int nVertices = matriz.size();
     int nArestas = 0;
 
-    // Conta o número total de arestas no digrafo
+    // Conta o número total de arestas
     for (int i = 0; i < nVertices; i++)
     {
         for (int j = 0; j < nVertices; j++)
@@ -207,12 +270,24 @@ vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int
         }
     }
 
-    vector<vector<int>> matrizInc(nVertices, vector<int>(nArestas, 0));
+    vector<vector<int>> matrizInc;
 
     int arestaAtual = 0;
     
     // Preenche a matriz de incidência
-    if(tipoGrafo == 2){
+    if(tipoGrafo == 1){
+        matrizInc.resize(nVertices, vector<int>(nArestas/2, 0));
+       for (int i = 0; i < nVertices; i++)
+        for (int j = i + 1; j < nVertices; j++)
+            if (matriz[i][j] == 1)
+            {
+                matrizInc[i][arestaAtual] = 1;
+                matrizInc[j][arestaAtual] = 1;
+                arestaAtual++;
+            }
+    }
+    else if(tipoGrafo == 2){
+        matrizInc.resize(nVertices, vector<int>(nArestas, 0));
         for (int j = 0; j < nVertices; j++)
         {
             for (int i = 0; i < nVertices; i++)
@@ -225,16 +300,6 @@ vector<vector<int>> CriarMatrizIncidencia(const vector<vector<int>> &matriz, int
                 }
             }
         }
-    }
-    else if(tipoGrafo == 1){
-       for (int i = 0; i < nVertices; i++)
-        for (int j = i + 1; j < nVertices; j++)
-            if (matriz[i][j] != 0 && matriz[i][j] != 999)
-            {
-                matrizInc[i][arestaAtual] = 1;
-                matrizInc[j][arestaAtual] = 1;
-                arestaAtual++;
-            }
     }
 
     return matrizInc;
@@ -306,8 +371,12 @@ void ImprimirMatrizIncidencia(const vector<vector<int>> &matrizInc, int n, ofstr
     }
 }
 
-void Imprimir(const vector<vector<int>> &matrizAdj, const vector<vector<int>> &matrizInc, TabelaIncidencia *tabelaInc, int n, ofstream &output_file)
+void Imprimir(const vector<vector<int>> &matrizDist, const vector<vector<int>> &matrizAdj, const vector<vector<int>> &matrizInc, TabelaIncidencia *tabelaInc, int n, ofstream &output_file)
 {
+            cout << "Matriz de Distância:" << endl;
+            output_file << "Matriz de Distância:" << endl;
+            ImprimirMatrizNxN(matrizDist, n, output_file);
+
             cout << endl << "Matriz de Adjacência:" << endl;
             output_file << endl << "Matriz de Adjadência:" << endl;
             ImprimirMatrizNxN(matrizAdj, n, output_file);
@@ -323,8 +392,9 @@ void Imprimir(const vector<vector<int>> &matrizAdj, const vector<vector<int>> &m
 
 
 // Parte 2 - Algoritmos
-void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file) {
+void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ofstream &output_file) {
     queue<int> fila;
+    vector<bool> visitados(matrizAdj.size(), false);
 
     // Inicializa a fila e marca o vértice inicial como visitado
     fila.push(verticeInicial);
@@ -346,29 +416,18 @@ void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, ve
             }
         }
     }
-}
-
-// Função para realizar a Busca em Largura em todos os vértices do grafo
-void BuscaEmLargura_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file) {
-    vector<bool> visitados(n, false);
-
-    // Executa a Busca em Largura a partir de todos os vértices não visitados
-    for (int i = 0; i < n; i++) {
-        if (!visitados[i]) {
-            BuscaEmLargura(matrizAdj, i, visitados, output_file);
-        }
-    }
     cout << endl;
     output_file << endl;
 }
 
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file)
 {
+
     visitados[verticeInicial] = true;
     cout << verticeInicial << " ";
     output_file << verticeInicial << " ";
 
-    for (int i = 0; i < matrizAdj.size(); ++i)
+    for (int i = 0; i < matrizAdj.size(); i++)
     {
         if (matrizAdj[verticeInicial][i] == 1 && !visitados[i])
         {
@@ -377,17 +436,12 @@ void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int verticeInicia
     }
 }
 
-void BuscaEmProfundidade_Completa(const vector<vector<int>> &matrizAdj, int n, ofstream &output_file)
+void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file)
 {
     vector<bool> visitados(n, false);
 
-    for (int i = 0; i < n; ++i)
-    {
-        if (!visitados[i])
-        {
-            BuscaEmProfundidade(matrizAdj, i, visitados, output_file);
-        }
-    }
+    BuscaEmProfundidade(matrizAdj, verticeInicial, visitados, output_file);      
+    
     cout << endl;
     output_file << endl;
 }
@@ -452,4 +506,40 @@ void caminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, in
             cout << ",";
     }
     cout << "]";
+}
+void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
+    // Vetor para armazenar os pais dos vértices na árvore geradora mínima
+    vector<int> pais(n, -1);
+    // Vetor para armazenar o peso mínimo de cada vértice até a árvore geradora mínima
+    vector<int> pesoMinimo(n, INT_MAX);
+    // Vetor para marcar se um vértice está incluído na árvore geradora mínima
+    vector<bool> incluido(n, false);
+
+    // Inicializa o peso mínimo do primeiro vértice como 0
+    pesoMinimo[0] = 0;
+
+    // Cria uma fila de prioridade (min heap) para escolher a próxima aresta de menor peso
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> filaPrioridade; // greater: Comparador usado para garantir que os elementos sejam organizados na fila de prioridade em ordem crescente com base no primeiro elemento do par (o peso da aresta).
+    filaPrioridade.push({0, 0}); // {Peso, Vértice}
+
+    while (!filaPrioridade.empty()) {
+        int atual = filaPrioridade.top().second; // Vértice associado à menor aresta
+        filaPrioridade.pop();
+
+        incluido[atual] = true;
+
+        for (int v = 0; v < n; v++) {
+            if (matrizDist[atual][v] != 0 && matrizDist[atual][v] != 999 && !incluido[v] && matrizDist[atual][v] < pesoMinimo[v]) {
+                pesoMinimo[v] = matrizDist[atual][v];
+                pais[v] = atual;
+                filaPrioridade.push({pesoMinimo[v], v});
+            }
+        }
+    }
+
+    // Imprime a árvore geradora mínima
+    for (int i = 1; i < n; i++) {
+        cout << pais[i] << " -> " << i << " | Peso: " << pesoMinimo[i] << endl;
+        output_file << pais[i] << " -> " << i << " | Peso: " << pesoMinimo[i] << endl;
+    }
 }
