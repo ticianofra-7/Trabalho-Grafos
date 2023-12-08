@@ -34,5 +34,5 @@
 
 # General
 
-./output/saida.txt
-./input/grafo.txt
+saida.txt
+grafo.txt
