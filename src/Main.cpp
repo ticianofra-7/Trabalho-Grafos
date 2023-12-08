@@ -25,7 +25,7 @@ void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, of
 void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
 
-void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
+void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
 
 void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 
@@ -59,7 +59,7 @@ int main()
 
     int tipoGrafo; // 1 - Simples (matriz lida = distância), 2 - Digrafo valorado (matriz lida = distância)
     int opcaoAlgoritmo;
-    int verticeInicial; // Para algoritmos BFS e DFS
+    int verticeInicial; // Para algoritmos BFS, DFS e Caminho Mínimo
 
     cout << "Escolha o tipo de grafo:" << endl;
     cout << "[1] Grafo Simples, valorado" << endl;
@@ -109,9 +109,12 @@ int main()
                 break;
 
             case 4:
+                cout << endl << "Informe o vértice inicial: ";
+                cin >> verticeInicial;
+                output_file << endl << "Vértice inicial: " << verticeInicial << endl;
                 cout << endl << "Caminho mínimo (Dijkstra):";
                 output_file << endl << "Caminho mínimo (Dijkstra):";
-                CaminhoMinimo(matriz, 0, n, output_file);
+                CaminhoMinimo(matriz, verticeInicial, n, output_file);
                 break;
             
             default:
@@ -427,71 +430,102 @@ void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int vertic
     output_file << endl;
 }
 
-void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
+void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
 
     int verticeAtual, contador, menor, temporario, distancia;
-    vector<bool> visitados(nVertices, false);
+    vector<bool> visitados(nVertices, true);
     vector<int> distancias(nVertices, 999);
     queue<int> filaVertices, filaOrdem, filaDistancias;
 
     verticeAtual = verticeInicial;
     contador = 0;
 
+    //Convertendo os valores da matriz de distância de 0 para 999 e armazenando numa nova matriz de distância
+    for(int i = 0; i < nVertices; i++)
+        for(int j = 0; j < nVertices; j++)
+            if(matrizDist[i][j] == 0)
+                matrizDist[i][j] = 999;
+
+    //Verifica qual vértice não possui aresta ligada a ele
     for(int i = 0; i < nVertices; i++) {
-        visitados[verticeAtual] = true;
-        filaVertices.push(verticeAtual);
-        filaOrdem.push(contador);
-        if(distancias[verticeAtual] == 999)
-            filaDistancias.push(0);
-        else
-            filaDistancias.push(distancias[verticeAtual]);
         for(int j = 0; j < nVertices; j++) {
-            if(!visitados[j]) {
-                distancia = matrizDist[verticeAtual][j];
-                if(verticeAtual == verticeInicial) {
-                    if(distancias[j] == 999)
-                        distancias[j] = distancia;
-                }
-                else {
-                    if(distancias[j] == 999) {
-                        temporario = distancias[verticeAtual] + distancia;
-                        distancias[j] = temporario;
+            if(matrizDist[i][j] != 999 || matrizDist[j][i] != 999) {
+                visitados[i] = false;
+                break;
+            }
+        }
+    }
+
+    //Algoritmo
+
+    //Verifica se o vertice escolhido possui arestas ou não ligados a ele
+    if(!visitados[verticeInicial]) {
+        //condição: varre todos os vértices caso seja um grafo conexo ou varre todos os vértices do subgrafo conexo
+        for(int i = 0; i < nVertices && visitados[verticeAtual] == false; i++) {
+            visitados[verticeAtual] = true;
+            filaVertices.push(verticeAtual);
+            filaOrdem.push(contador);
+            if(distancias[verticeAtual] == 999)
+                filaDistancias.push(0);
+            else
+                filaDistancias.push(distancias[verticeAtual]);
+            for(int j = 0; j < nVertices; j++) {
+                //Verifica se o vértice já está inserido na árvore
+                if(!visitados[j]) {
+                    distancia = matrizDist[verticeAtual][j];
+                    if(verticeAtual == verticeInicial) {
+                        if(distancias[j] == 999)
+                            distancias[j] = distancia;
                     }
-                    else if(distancias[j] != 999 && distancia != 999) {
-                        temporario = distancias[verticeAtual] + distancia;
-                        if(temporario < distancias[j])
+                    else {
+                        if(distancias[j] == 999) {
+                            temporario = distancias[verticeAtual] + distancia;
                             distancias[j] = temporario;
+                        }
+                        else if(distancias[j] != 999 && distancia != 999) {
+                            temporario = distancias[verticeAtual] + distancia;
+                            if(temporario < distancias[j])
+                                distancias[j] = temporario;
+                        }
                     }
                 }
             }
+            menor = distancias[verticeInicial];
+            verticeAtual = verticeInicial;
+            for(int j = 0; j < distancias.size(); j++) {
+                if(distancias[j] < menor && visitados[j] == false) {
+                    menor = distancias[j];
+                    verticeAtual = j;
+                }
+            }
+            contador++;
         }
-        menor = distancias[0];
-        for(int j = 0; j < distancias.size(); j++) {
-            if(distancias[j] < menor && visitados[j] == false) {
-                menor = distancias[j];
-                verticeAtual = j;
+
+        //Impressão
+        cout << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
+        cout << "[";
+        output_file << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
+        output_file << "[";
+
+        while(!filaDistancias.empty()) {
+            cout << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
+            output_file << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
+            filaVertices.pop();
+            filaOrdem.pop();
+            filaDistancias.pop();
+            if(!filaDistancias.empty()) {
+                cout << ",";
+                output_file << ",";
             }
         }
-        contador++;
-    }
-
-    //cout << "Lista do caminho minimo a partir do vertice inicial (1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia): ";
-    cout << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
-    cout << "[";
-    output_file << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
-    output_file << "[";
-
-    for(int i = 0; i < nVertices; i++) {
-        cout << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
-        output_file << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
-        filaVertices.pop();
-        filaOrdem.pop();
-        filaDistancias.pop();
-        if(!(i == nVertices-1))
-            cout << ",";
-    }
-    cout << "]" << endl;
-    output_file << "]" << endl;
+        cout << "]" << endl;
+        output_file << "]" << endl;
+    } else {
+        //Impressão
+        cout << "\n\n";
+        cout << "O vertice escolhido como vertice inicial nao possui arestas e, portanto, seu caminho minimo e 0." << endl;
+        output_file << "O vertice escolhido como vertice inicial nao possui arestas e, portanto, seu caminho minimo e 0." << endl;
+    }   
 }
 
 void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
@@ -564,3 +598,5 @@ void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_
     cout << endl;
     output_file << endl;
 }
+
+
