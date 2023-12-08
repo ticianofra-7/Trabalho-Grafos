@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+
+# General
+
+./output/saida.txt
+./input/grafo.txt
