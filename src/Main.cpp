@@ -32,6 +32,8 @@ void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 void OrdenacaoTopologica_Aux(const vector<vector<int>> &matrizAdj, int vertice, vector<bool> &visitados, stack<int> &pilha);
 void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_file);
 
+void CicloEuleriano(const vector<vector<int>> &matrizInc, ofstream &output_file);
+
 int main()
 {    
     // Abre o arquivo de entrada
@@ -79,7 +81,8 @@ int main()
             cout << "[2] Busca em Profundidade (DFS)" << endl;
             cout << "[3] Árvore Geradora Mínima (Prim)" << endl;
             cout << "[4] Caminho Mínimo (Dijkstra)" << endl;
-            cout << "[5] Sair" << endl << endl;
+            cout << "[5] Ciclo Euleriano" << endl;
+            cout << "[6] Sair" << endl << endl;
             cin >> opcaoAlgoritmo;
 
             switch (opcaoAlgoritmo)
@@ -103,8 +106,8 @@ int main()
                 break;
             
             case 3:
-                cout << endl << "Árvore Geradora Mínima (Prim):" << endl;
-                output_file << endl << "Árvore Geradora Mínima (Prim):" << endl;
+                cout << endl << "Árvore Geradora Mínima (Prim): " << endl;
+                output_file << endl << "Árvore Geradora Mínima (Prim): " << endl;
                 Prim(matriz, n, output_file);                
                 break;
 
@@ -112,9 +115,14 @@ int main()
                 cout << endl << "Informe o vértice inicial: ";
                 cin >> verticeInicial;
                 output_file << endl << "Vértice inicial: " << verticeInicial << endl;
-                cout << endl << "Caminho mínimo (Dijkstra):";
-                output_file << endl << "Caminho mínimo (Dijkstra):";
+                cout << endl << "Caminho mínimo (Dijkstra): ";
+                output_file << endl << "Caminho mínimo (Dijkstra): ";
                 CaminhoMinimo(matriz, verticeInicial, n, output_file);
+                break;
+            case 5:
+                cout << endl << "Ciclo euleriano: ";
+                output_file << endl << "Ciclo euleriano: ";
+                CicloEuleriano(matrizInc, output_file);
                 break;
             
             default:
@@ -174,7 +182,7 @@ int main()
                 cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
                 break;
             }
-        }while(opcaoAlgoritmo != 5);
+        }while(opcaoAlgoritmo != 6);
     }
     
     // Fecha arquivo de saída
@@ -599,4 +607,111 @@ void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_
     output_file << endl;
 }
 
+void CicloEuleriano(const vector<vector<int>> &matrizInc, ofstream &output_file) {
 
+    int verticeInicial, verticeAtual, arestaAtual;
+    bool matrizVazio, linhaVazio;
+    vector<vector<int>> matrizCiclo;
+    queue<int> ciclo, cicloEuleriano;
+    queue<queue<int>> ciclosNormais;
+
+    matrizCiclo = matrizInc;
+
+    do {
+        verticeInicial = 0;
+        verticeAtual = 0;
+        matrizVazio = true;
+        linhaVazio = true;
+
+        while(!ciclo.empty()) {
+            ciclo.pop();
+        }
+
+        for(int i = 0; i < matrizCiclo.size(); i++) {
+            for(int j = 0; j < matrizCiclo[i].size(); j++) {
+                if(matrizCiclo[i][j] == 1) {
+                    verticeInicial = i;
+                    verticeAtual = i;
+                    linhaVazio = false;
+                    break;
+                }
+            }
+            if(!linhaVazio)
+                break;
+        }
+
+        do {
+            ciclo.push(verticeAtual);
+            for(int i = 0; i < matrizCiclo[verticeAtual].size(); i++) {
+                if(matrizCiclo[verticeAtual][i] == 1)
+                    arestaAtual = i;
+            }
+            matrizCiclo[verticeAtual][arestaAtual] = 0;
+            for(int i = 0; i < matrizCiclo.size(); i++) {
+                if(matrizCiclo[i][arestaAtual] == 1)
+                    verticeAtual = i;
+            }
+            matrizCiclo[verticeAtual][arestaAtual] = 0;
+            if(verticeAtual == verticeInicial)
+                ciclo.push(verticeAtual);
+        } while(verticeAtual != verticeInicial);
+
+        ciclosNormais.push(ciclo);
+
+        for(int i = 0; i < matrizCiclo.size(); i++) {
+            for(int j = 0; j < matrizCiclo[i].size(); j++) {
+                if(matrizCiclo[i][j] == 1) {
+                    matrizVazio = false;
+                    break;
+                }
+            }
+            if(matrizVazio == false)
+                break;
+        }
+
+        /*
+        //DEBUG
+        for(int i = 0; i <= ciclosNormais.size(); i++) {
+            cout << "\n" << i+1 << "o ciclo: (";
+            output_file << "\n" << i+1 << "o ciclo: (";
+            for(int j = 0; j < ciclosNormais.front().size(); j++) {
+                cout << ciclosNormais.front().front() << ",";
+                output_file << ciclosNormais.front().front() << ",";
+            }
+            cout << ")" << endl;
+            output_file << ")" << endl;
+        }
+        */
+        
+        if(ciclosNormais.size() > 1) {
+            while(!ciclosNormais.front().empty()) {
+                if(ciclosNormais.front().front() == ciclosNormais.back().front() && ciclosNormais.back().empty() == false) {
+                    while(!ciclosNormais.back().empty()) {
+                        cicloEuleriano.push(ciclosNormais.back().front());
+                        ciclosNormais.back().pop();
+                    }
+                    ciclosNormais.front().pop();
+                }
+                cicloEuleriano.push(ciclosNormais.front().front());
+                ciclosNormais.front().pop();
+            }
+            while(!ciclosNormais.empty()) {
+                ciclosNormais.pop();
+            }
+            ciclosNormais.push(cicloEuleriano);
+        }
+
+    } while(!matrizVazio);
+
+    cout << "(";
+    while(!cicloEuleriano.empty()) {
+            cout << cicloEuleriano.front();
+            output_file << cicloEuleriano.front();
+        if(cicloEuleriano.size() != 1) {
+            cout << ",";
+            output_file << ",";
+        }
+        cicloEuleriano.pop();
+    }
+    cout << ")";
+}
