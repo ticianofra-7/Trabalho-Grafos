@@ -609,109 +609,110 @@ void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_
 
 void CicloEuleriano(const vector<vector<int>> &matrizInc, ofstream &output_file) {
 
-    int verticeInicial, verticeAtual, arestaAtual;
+    int verticeInicial, verticeAtual, arestaAtual, nArestas;
     bool matrizVazio, linhaVazio;
     vector<vector<int>> matrizCiclo;
     queue<int> ciclo, cicloEuleriano;
     queue<queue<int>> ciclosNormais;
 
     matrizCiclo = matrizInc;
+    nArestas = 0;
 
-    do {
-        verticeInicial = 0;
-        verticeAtual = 0;
-        matrizVazio = true;
-        linhaVazio = true;
-
-        while(!ciclo.empty()) {
-            ciclo.pop();
+    for(int i = 0; i < matrizCiclo.size(); i++) {
+        for(int j = 0; j < matrizCiclo[i].size(); j++) {
+            if(matrizCiclo[i][j] == 1)
+                nArestas++;
         }
+        if(nArestas % 2 == 1)
+            break;
+    }
 
-        for(int i = 0; i < matrizCiclo.size(); i++) {
-            for(int j = 0; j < matrizCiclo[i].size(); j++) {
-                if(matrizCiclo[i][j] == 1) {
-                    verticeInicial = i;
-                    verticeAtual = i;
-                    linhaVazio = false;
-                    break;
-                }
-            }
-            if(!linhaVazio)
-                break;
-        }
-
+    if(nArestas % 2 == 0) {
         do {
-            ciclo.push(verticeAtual);
-            for(int i = 0; i < matrizCiclo[verticeAtual].size(); i++) {
-                if(matrizCiclo[verticeAtual][i] == 1)
-                    arestaAtual = i;
+            verticeInicial = 0;
+            verticeAtual = 0;
+            matrizVazio = true;
+            linhaVazio = true;
+
+            while(!ciclo.empty()) {
+                ciclo.pop();
             }
-            matrizCiclo[verticeAtual][arestaAtual] = 0;
+
             for(int i = 0; i < matrizCiclo.size(); i++) {
-                if(matrizCiclo[i][arestaAtual] == 1)
-                    verticeAtual = i;
-            }
-            matrizCiclo[verticeAtual][arestaAtual] = 0;
-            if(verticeAtual == verticeInicial)
-                ciclo.push(verticeAtual);
-        } while(verticeAtual != verticeInicial);
-
-        ciclosNormais.push(ciclo);
-
-        for(int i = 0; i < matrizCiclo.size(); i++) {
-            for(int j = 0; j < matrizCiclo[i].size(); j++) {
-                if(matrizCiclo[i][j] == 1) {
-                    matrizVazio = false;
-                    break;
-                }
-            }
-            if(matrizVazio == false)
-                break;
-        }
-
-        /*
-        //DEBUG
-        for(int i = 0; i <= ciclosNormais.size(); i++) {
-            cout << "\n" << i+1 << "o ciclo: (";
-            output_file << "\n" << i+1 << "o ciclo: (";
-            for(int j = 0; j < ciclosNormais.front().size(); j++) {
-                cout << ciclosNormais.front().front() << ",";
-                output_file << ciclosNormais.front().front() << ",";
-            }
-            cout << ")" << endl;
-            output_file << ")" << endl;
-        }
-        */
-        
-        if(ciclosNormais.size() > 1) {
-            while(!ciclosNormais.front().empty()) {
-                if(ciclosNormais.front().front() == ciclosNormais.back().front() && ciclosNormais.back().empty() == false) {
-                    while(!ciclosNormais.back().empty()) {
-                        cicloEuleriano.push(ciclosNormais.back().front());
-                        ciclosNormais.back().pop();
+                for(int j = 0; j < matrizCiclo[i].size(); j++) {
+                    if(matrizCiclo[i][j] == 1) {
+                        verticeInicial = i;
+                        verticeAtual = i;
+                        linhaVazio = false;
+                        break;
                     }
+                }
+                if(!linhaVazio)
+                    break;
+            }
+
+            do {
+                ciclo.push(verticeAtual);
+                for(int i = 0; i < matrizCiclo[verticeAtual].size(); i++) {
+                    if(matrizCiclo[verticeAtual][i] == 1)
+                        arestaAtual = i;
+                }
+                matrizCiclo[verticeAtual][arestaAtual] = 0;
+                for(int i = 0; i < matrizCiclo.size(); i++) {
+                    if(matrizCiclo[i][arestaAtual] == 1)
+                        verticeAtual = i;
+                }
+                matrizCiclo[verticeAtual][arestaAtual] = 0;
+                if(verticeAtual == verticeInicial)
+                    ciclo.push(verticeAtual);
+            } while(verticeAtual != verticeInicial);
+
+            ciclosNormais.push(ciclo);
+
+            for(int i = 0; i < matrizCiclo.size(); i++) {
+                for(int j = 0; j < matrizCiclo[i].size(); j++) {
+                    if(matrizCiclo[i][j] == 1) {
+                        matrizVazio = false;
+                        break;
+                    }
+                }
+                if(matrizVazio == false)
+                    break;
+            }
+            
+            if(ciclosNormais.size() > 1) {
+                while(!ciclosNormais.front().empty()) {
+                    if(ciclosNormais.front().front() == ciclosNormais.back().front() && ciclosNormais.back().empty() == false) {
+                        while(!ciclosNormais.back().empty()) {
+                            cicloEuleriano.push(ciclosNormais.back().front());
+                            ciclosNormais.back().pop();
+                        }
+                        ciclosNormais.front().pop();
+                    }
+                    cicloEuleriano.push(ciclosNormais.front().front());
                     ciclosNormais.front().pop();
                 }
-                cicloEuleriano.push(ciclosNormais.front().front());
-                ciclosNormais.front().pop();
+                while(!ciclosNormais.empty()) {
+                    ciclosNormais.pop();
+                }
+                ciclosNormais.push(cicloEuleriano);
             }
-            while(!ciclosNormais.empty()) {
-                ciclosNormais.pop();
+
+        } while(!matrizVazio);
+
+        cout << "(";
+        while(!cicloEuleriano.empty()) {
+                cout << cicloEuleriano.front();
+                output_file << cicloEuleriano.front();
+            if(cicloEuleriano.size() != 1) {
+                cout << ",";
+                output_file << ",";
             }
-            ciclosNormais.push(cicloEuleriano);
+            cicloEuleriano.pop();
         }
-
-    } while(!matrizVazio);
-
-    cout << "(";
-    while(!cicloEuleriano.empty()) {
-            cout << cicloEuleriano.front();
-            output_file << cicloEuleriano.front();
-        if(cicloEuleriano.size() != 1) {
-            cout << ",";
-            output_file << ",";
-        }
-        cicloEuleriano.pop();
+        cout << ")";
+    } else {
+        cout << "O grafo possui algum vertice que nao tem grau de incidencia par e, portanto, nao e possivel executar o algoritmo." << endl;
+        output_file << "O grafo possui algum vertice que nao tem grau de incidencia par e, portanto, nao e possivel executar o algoritmo." << endl;
     }
-    cout << ")";
 }
