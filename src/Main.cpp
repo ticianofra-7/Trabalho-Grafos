@@ -129,7 +129,7 @@ int main()
                 cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
                 break;
             }
-        }while(opcaoAlgoritmo != 5);
+        }while(opcaoAlgoritmo != 6);
     }
     else if(tipoGrafo == 2){
         matrizAdj = CriarMatrizAdjacencia(matriz, tipoGrafo);
@@ -182,7 +182,7 @@ int main()
                 cout << endl << "Nenhum algoritmo selecionado. Saindo..." << endl;
                 break;
             }
-        }while(opcaoAlgoritmo != 6);
+        }while(opcaoAlgoritmo != 5);
     }
     
     // Fecha arquivo de saída
@@ -440,13 +440,13 @@ void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int vertic
 
 void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
 
-    int verticeAtual, contador, menor, temporario, distancia;
+    int verticeAtual, menor, temporario, distancia;
     vector<bool> visitados(nVertices, true);
     vector<int> distancias(nVertices, 999);
-    queue<int> filaVertices, filaOrdem, filaDistancias;
+    queue<int> filaVertices;
+    vector<queue<int>> listaFilaVertices(nVertices-1);
 
     verticeAtual = verticeInicial;
-    contador = 0;
 
     //Convertendo os valores da matriz de distância de 0 para 999 e armazenando numa nova matriz de distância
     for(int i = 0; i < nVertices; i++)
@@ -471,12 +471,12 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
         //condição: varre todos os vértices caso seja um grafo conexo ou varre todos os vértices do subgrafo conexo
         for(int i = 0; i < nVertices && visitados[verticeAtual] == false; i++) {
             visitados[verticeAtual] = true;
-            filaVertices.push(verticeAtual);
-            filaOrdem.push(contador);
-            if(distancias[verticeAtual] == 999)
-                filaDistancias.push(0);
-            else
-                filaDistancias.push(distancias[verticeAtual]);
+            if(i == 0) {
+                filaVertices.push(verticeInicial);
+                for(int j = 0; j < listaFilaVertices.size(); j++) {
+                    listaFilaVertices[j] = filaVertices;
+                }
+            }
             for(int j = 0; j < nVertices; j++) {
                 //Verifica se o vértice já está inserido na árvore
                 if(!visitados[j]) {
@@ -489,11 +489,14 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
                         if(distancias[j] == 999) {
                             temporario = distancias[verticeAtual] + distancia;
                             distancias[j] = temporario;
+                            listaFilaVertices[j-1].push(verticeAtual);
                         }
                         else if(distancias[j] != 999 && distancia != 999) {
                             temporario = distancias[verticeAtual] + distancia;
-                            if(temporario < distancias[j])
+                            if(temporario < distancias[j]) {
                                 distancias[j] = temporario;
+                                listaFilaVertices[j-1].push(verticeAtual);
+                            }
                         }
                     }
                 }
@@ -506,28 +509,22 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
                     verticeAtual = j;
                 }
             }
-            contador++;
+            listaFilaVertices[verticeAtual-1].push(verticeAtual);
         }
 
         //Impressão
-        cout << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
-        cout << "[";
-        output_file << endl << "(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)" << endl;
-        output_file << "[";
-
-        while(!filaDistancias.empty()) {
-            cout << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
-            output_file << "(" << filaVertices.front() << "," << filaOrdem.front() << "," << filaDistancias.front() << ")";
-            filaVertices.pop();
-            filaOrdem.pop();
-            filaDistancias.pop();
-            if(!filaDistancias.empty()) {
-                cout << ",";
-                output_file << ",";
+        cout << endl;
+        for(int i = 0; i < listaFilaVertices.size(); i++) {
+            cout << "Caminho do vertice inicial (" << verticeInicial << ") até o vertice (" << i+1 << ") : ";
+            while(!listaFilaVertices[i].empty()) {
+                cout << listaFilaVertices.front().front();
+                listaFilaVertices.front().pop();
+                if(!listaFilaVertices.front().empty()) {
+                    cout << ",";
+                }
             }
+            cout << endl;
         }
-        cout << "]" << endl;
-        output_file << "]" << endl;
     } else {
         //Impressão
         cout << "\n\n";
