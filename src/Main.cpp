@@ -476,7 +476,7 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
                 }
             }
             for(int j = 0; j < nVertices; j++) {
-                //Verifica se o vértice já está inserido na árvore
+                //Verifica se o vértice já está inserido no caminho.
                 if(!visitados[j]) {
                     distancia = matrizDist[verticeAtual][j];
                     if(verticeAtual == verticeInicial) {
@@ -513,15 +513,21 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
         //Impressão
         cout << endl;
         for(int i = 0; i < listaFilaVertices.size(); i++) {
-            cout << "Caminho do vertice inicial (" << verticeInicial << ") até o vertice (" << i+1 << ") : ";
+            cout << "Caminho e peso do vertice inicial (" << verticeInicial << ") até o vertice (" << i+1 << ") :" << endl;
+            cout << "Caminho: [";
             while(!listaFilaVertices[i].empty()) {
                 cout << listaFilaVertices[i].front();
                 listaFilaVertices[i].pop();
                 if(!listaFilaVertices[i].empty()) {
                     cout << ",";
+                } else {
+                    cout << "]";
                 }
             }
             cout << endl;
+            cout << "Peso: ";
+            cout << distancias[i+1];
+            cout << endl << endl;
         }
     } else {
         //Impressão
