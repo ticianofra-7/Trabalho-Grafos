@@ -443,7 +443,6 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
     int verticeAtual, menor, temporario, distancia;
     vector<bool> visitados(nVertices, true);
     vector<int> distancias(nVertices, 999);
-    queue<int> filaVertices;
     vector<queue<int>> listaFilaVertices(nVertices-1);
 
     verticeAtual = verticeInicial;
@@ -472,9 +471,8 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
         for(int i = 0; i < nVertices && visitados[verticeAtual] == false; i++) {
             visitados[verticeAtual] = true;
             if(i == 0) {
-                filaVertices.push(verticeInicial);
                 for(int j = 0; j < listaFilaVertices.size(); j++) {
-                    listaFilaVertices[j] = filaVertices;
+                    listaFilaVertices[j].push(verticeInicial);
                 }
             }
             for(int j = 0; j < nVertices; j++) {
@@ -517,9 +515,9 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
         for(int i = 0; i < listaFilaVertices.size(); i++) {
             cout << "Caminho do vertice inicial (" << verticeInicial << ") até o vertice (" << i+1 << ") : ";
             while(!listaFilaVertices[i].empty()) {
-                cout << listaFilaVertices.front().front();
-                listaFilaVertices.front().pop();
-                if(!listaFilaVertices.front().empty()) {
+                cout << listaFilaVertices[i].front();
+                listaFilaVertices[i].pop();
+                if(!listaFilaVertices[i].empty()) {
                     cout << ",";
                 }
             }
