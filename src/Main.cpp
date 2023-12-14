@@ -507,7 +507,8 @@ void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVer
                     verticeAtual = j;
                 }
             }
-            listaFilaVertices[verticeAtual-1].push(verticeAtual);
+            if(verticeAtual != verticeInicial)
+                listaFilaVertices[verticeAtual-1].push(verticeAtual);
         }
 
         //Impressão
