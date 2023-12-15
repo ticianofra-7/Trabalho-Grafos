@@ -25,7 +25,7 @@ void BuscaEmLargura(const vector<vector<int>> &matrizAdj, int verticeInicial, of
 void BuscaEmProfundidade_Aux(const vector<vector<int>> &matrizAdj, int verticeInicial, vector<bool> &visitados, ofstream &output_file);
 void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int verticeInicial, ofstream &output_file);
 
-void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
+void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file);
 
 void Prim(const vector<vector<int>>& matrizDist, int n, ofstream &output_file);
 
@@ -438,104 +438,60 @@ void BuscaEmProfundidade(const vector<vector<int>> &matrizAdj, int n, int vertic
     output_file << endl;
 }
 
-void CaminhoMinimo(vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
+void CaminhoMinimo(const vector<vector<int>> &matrizDist, int verticeInicial, int nVertices, ofstream &output_file) {
+    vector<int> distancia(nVertices, INT_MAX);
+    vector<int> caminhoAnterior(nVertices, -1);
+    vector<bool> visitado(nVertices, false);
 
-    int verticeAtual, menor, temporario, distancia;
-    vector<bool> visitados(nVertices, true);
-    vector<int> distancias(nVertices, 999);
-    vector<queue<int>> listaFilaVertices(nVertices-1);
+    distancia[verticeInicial] = 0;
 
-    verticeAtual = verticeInicial;
+    for (int count = 0; count < nVertices - 1; count++) {
+        int u = -1; // Se permanecer como -1 após o loop de iteração, significa que nenhum vértice não visitado foi encontrado com uma distância menor
 
-    //Convertendo os valores da matriz de distância de 0 para 999 e armazenando numa nova matriz de distância
-    for(int i = 0; i < nVertices; i++)
-        for(int j = 0; j < nVertices; j++)
-            if(matrizDist[i][j] == 0)
-                matrizDist[i][j] = 999;
+        // Encontra o vértice não visitado com a menor distância
+        for (int v = 0; v < nVertices; v++) {
+            if (!visitado[v] && (u == -1 || distancia[v] < distancia[u]))
+                u = v;
+        }
 
-    //Verifica qual vértice não possui aresta ligada a ele
-    for(int i = 0; i < nVertices; i++) {
-        for(int j = 0; j < nVertices; j++) {
-            if(matrizDist[i][j] != 999 || matrizDist[j][i] != 999) {
-                visitados[i] = false;
-                break;
+        visitado[u] = true;
+
+        // Atualiza as distâncias para os vértices adjacentes ao vértice escolhido
+        for (int v = 0; v < nVertices; v++) {
+            if (!visitado[v] && matrizDist[u][v] && distancia[u] != INT_MAX &&
+                distancia[u] + matrizDist[u][v] < distancia[v]) {
+                distancia[v] = distancia[u] + matrizDist[u][v];
+                caminhoAnterior[v] = u;
             }
         }
     }
 
-    //Algoritmo
+    // Imprime o caminho mínimo para cada vértice
+    for (int i = 0; i < nVertices; i++) {
+        if (i != verticeInicial) {
+            stack<int> caminho;
+            int destino = i;
 
-    //Verifica se o vertice escolhido possui arestas ou não ligados a ele
-    if(!visitados[verticeInicial]) {
-        //condição: varre todos os vértices caso seja um grafo conexo ou varre todos os vértices do subgrafo conexo
-        for(int i = 0; i < nVertices && visitados[verticeAtual] == false; i++) {
-            visitados[verticeAtual] = true;
-            if(i == 0) {
-                for(int j = 0; j < listaFilaVertices.size(); j++) {
-                    listaFilaVertices[j].push(verticeInicial);
-                }
+            // Constrói o caminho usando o vetor de caminho anterior
+            while (destino != -1) {
+                caminho.push(destino);
+                destino = caminhoAnterior[destino];
             }
-            for(int j = 0; j < nVertices; j++) {
-                //Verifica se o vértice já está inserido no caminho.
-                if(!visitados[j]) {
-                    distancia = matrizDist[verticeAtual][j];
-                    if(verticeAtual == verticeInicial) {
-                        if(distancias[j] == 999)
-                            distancias[j] = distancia;
-                    }
-                    else {
-                        if(distancias[j] == 999) {
-                            temporario = distancias[verticeAtual] + distancia;
-                            distancias[j] = temporario;
-                            listaFilaVertices[j-1].push(verticeAtual);
-                        }
-                        else if(distancias[j] != 999 && distancia != 999) {
-                            temporario = distancias[verticeAtual] + distancia;
-                            if(temporario < distancias[j]) {
-                                distancias[j] = temporario;
-                                listaFilaVertices[j-1].push(verticeAtual);
-                            }
-                        }
-                    }
-                }
-            }
-            menor = distancias[verticeInicial];
-            verticeAtual = verticeInicial;
-            for(int j = 0; j < distancias.size(); j++) {
-                if(distancias[j] < menor && visitados[j] == false) {
-                    menor = distancias[j];
-                    verticeAtual = j;
-                }
-            }
-            if(verticeAtual != verticeInicial)
-                listaFilaVertices[verticeAtual-1].push(verticeAtual);
-        }
 
-        //Impressão
-        cout << endl;
-        for(int i = 0; i < listaFilaVertices.size(); i++) {
-            cout << "Caminho e peso do vertice inicial (" << verticeInicial << ") até o vertice (" << i+1 << ") :" << endl;
-            cout << "Caminho: [";
-            while(!listaFilaVertices[i].empty()) {
-                cout << listaFilaVertices[i].front();
-                listaFilaVertices[i].pop();
-                if(!listaFilaVertices[i].empty()) {
-                    cout << ",";
-                } else {
-                    cout << "]";
-                }
+            // Imprime o caminho mínimo e o peso do caminho
+            cout << "Caminho mínimo de " << verticeInicial << " para " << i << ": " << verticeInicial;
+            output_file << "Caminho mínimo de " << verticeInicial << " para " << i << ": " << verticeInicial;
+
+            while (!caminho.empty()) {
+                cout << " -> " << caminho.top();
+                output_file << " -> " << caminho.top();
+                caminho.pop();
             }
-            cout << endl;
-            cout << "Peso: ";
-            cout << distancias[i+1];
-            cout << endl << endl;
+
+            cout << " | Peso do caminho: " << distancia[i] << endl;
+            output_file << " | Peso do caminho: " << distancia[i] << endl;
         }
-    } else {
-        //Impressão
-        cout << "\n\n";
-        cout << "O vertice escolhido como vertice inicial nao possui arestas e, portanto, seu caminho minimo e 0." << endl;
-        output_file << "O vertice escolhido como vertice inicial nao possui arestas e, portanto, seu caminho minimo e 0." << endl;
-    }   
+    }
 }
 
 void Prim(const vector<vector<int>> &matrizDist, int n, ofstream &output_file) {
@@ -610,82 +566,100 @@ void OrdenacaoTopologica(const vector<vector<int>> &matrizAdj, ofstream &output_
 }
 
 void CicloEuleriano(const vector<vector<int>> &matrizInc, ofstream &output_file) {
-
+    // Variáveis para armazenar informações sobre o grafo e o ciclo euleriano
     int verticeInicial, verticeAtual, arestaAtual, nArestas;
     bool matrizVazio, linhaVazio;
+
+    // Matriz para armazenar o ciclo euleriano
     vector<vector<int>> matrizCiclo;
+
+    // Filas para armazenar vértices do ciclo e do ciclo euleriano
     queue<int> ciclo, cicloEuleriano;
+
+    // Fila de filas para armazenar ciclos normais
     queue<queue<int>> ciclosNormais;
 
+    // Inicializa a matriz do ciclo com a matriz de incidência
     matrizCiclo = matrizInc;
+
+    // Inicializa o número de arestas
     nArestas = 0;
 
-    for(int i = 0; i < matrizCiclo.size(); i++) {
-        for(int j = 0; j < matrizCiclo[i].size(); j++) {
-            if(matrizCiclo[i][j] == 1)
+    // Verifica se o grau de incidência de cada vértice é par
+    for (int i = 0; i < matrizCiclo.size(); i++) {
+        for (int j = 0; j < matrizCiclo[i].size(); j++) {
+            if (matrizCiclo[i][j] == 1)
                 nArestas++;
         }
-        if(nArestas % 2 == 1)
+        if (nArestas % 2 == 1)
             break;
     }
 
-    if(nArestas % 2 == 0) {
+    // Verifica se o número total de arestas é par (condição para a existência de um ciclo euleriano)
+    if (nArestas % 2 == 0) {
         do {
+            // Inicializa algumas variáveis para o início de um novo ciclo
             verticeInicial = 0;
             verticeAtual = 0;
             matrizVazio = true;
             linhaVazio = true;
 
-            while(!ciclo.empty()) {
+            // Limpa a fila ciclo
+            while (!ciclo.empty()) {
                 ciclo.pop();
             }
 
-            for(int i = 0; i < matrizCiclo.size(); i++) {
-                for(int j = 0; j < matrizCiclo[i].size(); j++) {
-                    if(matrizCiclo[i][j] == 1) {
+            // Encontra o primeiro vértice inicial do ciclo
+            for (int i = 0; i < matrizCiclo.size(); i++) {
+                for (int j = 0; j < matrizCiclo[i].size(); j++) {
+                    if (matrizCiclo[i][j] == 1) {
                         verticeInicial = i;
                         verticeAtual = i;
                         linhaVazio = false;
                         break;
                     }
                 }
-                if(!linhaVazio)
+                if (!linhaVazio)
                     break;
             }
 
+            // Encontra um ciclo euleriano no grafo
             do {
                 ciclo.push(verticeAtual);
-                for(int i = 0; i < matrizCiclo[verticeAtual].size(); i++) {
-                    if(matrizCiclo[verticeAtual][i] == 1)
+                for (int i = 0; i < matrizCiclo[verticeAtual].size(); i++) {
+                    if (matrizCiclo[verticeAtual][i] == 1)
                         arestaAtual = i;
                 }
                 matrizCiclo[verticeAtual][arestaAtual] = 0;
-                for(int i = 0; i < matrizCiclo.size(); i++) {
-                    if(matrizCiclo[i][arestaAtual] == 1)
+                for (int i = 0; i < matrizCiclo.size(); i++) {
+                    if (matrizCiclo[i][arestaAtual] == 1)
                         verticeAtual = i;
                 }
                 matrizCiclo[verticeAtual][arestaAtual] = 0;
-                if(verticeAtual == verticeInicial)
+                if (verticeAtual == verticeInicial)
                     ciclo.push(verticeAtual);
-            } while(verticeAtual != verticeInicial);
+            } while (verticeAtual != verticeInicial);
 
+            // Adiciona o ciclo encontrado à fila de ciclos normais
             ciclosNormais.push(ciclo);
 
-            for(int i = 0; i < matrizCiclo.size(); i++) {
-                for(int j = 0; j < matrizCiclo[i].size(); j++) {
-                    if(matrizCiclo[i][j] == 1) {
+            // Verifica se a matriz ainda contém arestas
+            for (int i = 0; i < matrizCiclo.size(); i++) {
+                for (int j = 0; j < matrizCiclo[i].size(); j++) {
+                    if (matrizCiclo[i][j] == 1) {
                         matrizVazio = false;
                         break;
                     }
                 }
-                if(matrizVazio == false)
+                if (matrizVazio == false)
                     break;
             }
-            
-            if(ciclosNormais.size() > 1) {
-                while(!ciclosNormais.front().empty()) {
-                    if(ciclosNormais.front().front() == ciclosNormais.back().front() && ciclosNormais.back().empty() == false) {
-                        while(!ciclosNormais.back().empty()) {
+
+            // Se houver mais de um ciclo normal, combina-os
+            if (ciclosNormais.size() > 1) {
+                while (!ciclosNormais.front().empty()) {
+                    if (ciclosNormais.front().front() == ciclosNormais.back().front() && ciclosNormais.back().empty() == false) {
+                        while (!ciclosNormais.back().empty()) {
                             cicloEuleriano.push(ciclosNormais.back().front());
                             ciclosNormais.back().pop();
                         }
@@ -694,19 +668,20 @@ void CicloEuleriano(const vector<vector<int>> &matrizInc, ofstream &output_file)
                     cicloEuleriano.push(ciclosNormais.front().front());
                     ciclosNormais.front().pop();
                 }
-                while(!ciclosNormais.empty()) {
+                // Limpa a fila de ciclos normais e adiciona o ciclo euleriano
+                while (!ciclosNormais.empty()) {
                     ciclosNormais.pop();
                 }
                 ciclosNormais.push(cicloEuleriano);
             }
+        } while (!matrizVazio);
 
-        } while(!matrizVazio);
-
+        // Imprime o ciclo euleriano
         cout << "(";
-        while(!cicloEuleriano.empty()) {
-                cout << cicloEuleriano.front();
-                output_file << cicloEuleriano.front();
-            if(cicloEuleriano.size() != 1) {
+        while (!cicloEuleriano.empty()) {
+            cout << cicloEuleriano.front();
+            output_file << cicloEuleriano.front();
+            if (cicloEuleriano.size() != 1) {
                 cout << ",";
                 output_file << ",";
             }
@@ -714,6 +689,7 @@ void CicloEuleriano(const vector<vector<int>> &matrizInc, ofstream &output_file)
         }
         cout << ")";
     } else {
+        // Imprime mensagem indicando que o grafo não possui um ciclo euleriano
         cout << "O grafo possui algum vertice que nao tem grau de incidencia par e, portanto, nao e possivel executar o algoritmo." << endl;
         output_file << "O grafo possui algum vertice que nao tem grau de incidencia par e, portanto, nao e possivel executar o algoritmo." << endl;
     }

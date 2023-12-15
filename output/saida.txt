@@ -1,45 +1,71 @@
 Matriz de Distância:
-      0     1     2     3 
+      0     1     2     3     4     5     6     7 
 
-0     0    12     3     8 
-1    12     0     1    14 
-2     3     1     0     5 
-3     8    14     5     0 
+0     0     5     7   999   999     4   999     5 
+1     5     0   999   999   999   999   999     4 
+2     7     0     0     9   999   999     8   999 
+3     0     0     9     0     7     9    11   999 
+4     0     0     0     7     0     8   999   999 
+5     4     0     0     9     8     0     8   999 
+6     0     0     8    11     0     8     0   999 
+7     5     4     0     0     0     0     0     0 
 
 Matriz de Adjadência:
-      0     1     2     3 
+      0     1     2     3     4     5     6     7 
 
-0     0     1     1     1 
-1     1     0     1     1 
-2     1     1     0     1 
-3     1     1     1     0 
+0     0     1     1     0     0     1     0     1 
+1     1     0     0     0     0     0     0     1 
+2     1     0     0     1     0     0     1     0 
+3     0     0     1     0     1     1     1     0 
+4     0     0     0     1     0     1     0     0 
+5     1     0     0     1     1     0     1     0 
+6     0     0     1     1     0     1     0     0 
+7     1     1     0     0     0     0     0     0 
 
 Matriz de Incidência:
-      a     b     c     d     e     f 
+      a     b     c     d     e     f     g     h     i     j     k     l 
 
-0     1     1     1     0     0     0 
-1     1     0     0     1     1     0 
-2     0     1     0     1     0     1 
-3     0     0     1     0     1     1 
+0     1     1     1     1     0     0     0     0     0     0     0     0 
+1     1     0     0     0     1     0     0     0     0     0     0     0 
+2     0     1     0     0     0     1     1     0     0     0     0     0 
+3     0     0     0     0     0     1     0     1     1     1     0     0 
+4     0     0     0     0     0     0     0     1     0     0     1     0 
+5     0     0     1     0     0     0     0     0     1     0     1     1 
+6     0     0     0     0     0     0     1     0     0     1     0     1 
+7     0     0     0     1     1     0     0     0     0     0     0     0 
 
 Tabela de Incidência:
+(0, d) =  1
 (0, c) =  1
 (0, b) =  1
 (0, a) =  1
 (1, e) =  1
-(1, d) =  1
 (1, a) =  1
+(2, g) =  1
 (2, f) =  1
-(2, d) =  1
 (2, b) =  1
+(3, j) =  1
+(3, i) =  1
+(3, h) =  1
 (3, f) =  1
-(3, e) =  1
-(3, c) =  1
+(4, k) =  1
+(4, h) =  1
+(5, l) =  1
+(5, k) =  1
+(5, i) =  1
+(5, c) =  1
+(6, l) =  1
+(6, j) =  1
+(6, g) =  1
+(7, e) =  1
+(7, d) =  1
 
-Caminho mínimo (Dijkstra):
-(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)
-[(0,0,0)(2,1,3)(1,2,4)(3,3,8)]
+Vértice inicial: 0
 
-Caminho mínimo (Dijkstra):
-(1o parametro: vertice; 2o parametro: ordem; 3o parametro: distancia)
-[(0,0,0)(2,1,3)(1,2,4)(3,3,8)]
+Caminho mínimo (Dijkstra): Caminho mínimo de 0 para 1: 0 -> 0 -> 1 | Peso do caminho: 5
+Caminho mínimo de 0 para 2: 0 -> 0 -> 2 | Peso do caminho: 7
+Caminho mínimo de 0 para 3: 0 -> 0 -> 5 -> 3 | Peso do caminho: 13
+Caminho mínimo de 0 para 4: 0 -> 0 -> 5 -> 4 | Peso do caminho: 12
+Caminho mínimo de 0 para 5: 0 -> 0 -> 5 | Peso do caminho: 4
+Caminho mínimo de 0 para 6: 0 -> 0 -> 5 -> 6 | Peso do caminho: 12
+Caminho mínimo de 0 para 7: 0 -> 0 -> 7 | Peso do caminho: 5
