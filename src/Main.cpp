@@ -10,6 +10,9 @@
 
 using namespace std;
 
+// Alunos: Leonorico Eduardo de Paula Borges (202135032)
+//         Ticiano de Oliveira Fracette (202065189AC)
+
 // Parte 1 - Base
 void LerMatriz(ifstream &input_file, vector<vector<int>> &matriz, int n);
 vector<vector<int>> CriarMatrizAdjacencia(vector<vector<int>> &matrizDist, int tipoGrafo);
